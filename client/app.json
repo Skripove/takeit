@@ -13,8 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "newArchEnabled": true
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +21,6 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "newArchEnabled": true,
       "package": "com.anonymous.client"
     },
     "web": {
