@@ -1,123 +1,124 @@
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { MMKV } from "react-native-mmkv";
-import { ItemType } from "../types/item";
-import { EventType } from "../types/event";
-import { EventItemType } from "../types/eventItem";
+import { ItemID, ItemType } from "../types/item";
+import { EventID, EventType } from "../types/event";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+type StorageItemType = ItemType & {
+  events: EventID[];
+};
+
+type StorageEventType = EventType & {
+  items: ItemID[];
+};
 
 type Storage = {
-  items: ItemType[];
-  events: EventType[];
-  eventItems: EventItemType[];
-};
-
-type Store = Storage & {
-  // Items (мастер)
-  addItem: (text: string) => number;
-  removeItem: (itemId: number) => void;
-
+  getAllItems: () => Promise<ItemType[]>;
+  getAllEvents: () => Promise<EventType[]>;
+  // Items
+  addItem: (text: string) => Promise<ItemType>;
+  removeItem: (itemId: ItemID) => Promise<ItemID>;
   // Events
-  addEvent: (title: string) => number;
-  removeEvent: (eventId: number) => void;
-
+  addEvent: (title: string) => Promise<EventType>;
+  removeEvent: (eventId: EventID) => Promise<ItemID>;
   // Привязка item к событию
-  attachItem: (eventId: number, itemId: number) => number;
-  detachItem: (eventItemId: number) => void;
-  toggleEventItem: (eventItemId: number) => void;
+  attachItem: (
+    eventId: number,
+    itemId: number
+  ) => Promise<{ eventId: number; itemId: number }>;
+  detachItem: (
+    itemId: number,
+    eventId: number
+  ) => Promise<{ itemId: number; eventId: number }>;
 };
 
-const version = 1;
-const mmkv = new MMKV();
-
-console.log("Все ключи:", mmkv.getAllKeys()); //TODO REMOVE
-console.log("items:", mmkv.getString("take_it_storage_v1")); //TODO REMOVE
-
-const storage = createJSONStorage(() => ({
-  getItem: (key) => mmkv.getString(key) ?? null,
-  setItem: (key, value) => mmkv.set(key, value),
-  removeItem: (key) => mmkv.delete(key),
-}));
+const ITEMS_STORAGE_KEY = "items_storage";
+const EVENTS_STORAGE_KEY = "events_storage";
 
 const now = () => new Date().toISOString();
 const uid = () => Number(Math.random().toString(36).slice(2));
 
-export const useTakeItStorage = create<Store>()(
-  persist(
-    (set, get) => ({
-      // INITIAL STATE
-      items: [],
+export const useTakeItStorage = (): Storage => {
+  const getAllItems = async () => {
+    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
+    if (!raw) return [];
+    const storageItems = JSON.parse(raw) as StorageItemType[];
+    const items: ItemType[] = storageItems.map(({ events, ...rest }) => ({
+      ...rest,
+    }));
+    return items;
+  };
+
+  const getAllEvents = async () => {
+    const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
+    if (!raw) return [];
+    const storageItems = JSON.parse(raw) as StorageEventType[];
+    const events: EventType[] = storageItems.map(({ items, ...rest }) => rest);
+    return events;
+  };
+
+  // Items
+  const addItem = async (text: string) => {
+    const storageItems = await getAllItems();
+    const newStorageItem: StorageItemType = {
+      id: uid(),
+      text,
       events: [],
-      eventItems: [],
+      creationDate: now(),
+    };
+    storageItems.push(newStorageItem);
+    await AsyncStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify(storageItems));
+    const { events, ...rest } = newStorageItem;
+    return rest as ItemType;
+  };
 
-      // ACTIONS
-      // Items
-      addItem: (text: string) => {
-        const id = uid();
-        const item = { id, text, creationDate: now() };
-        set((s) => ({ items: [item, ...s.items] }));
-        return id;
-      },
-      removeItem: (itemId: number) => {
-        set((s) => ({
-          items: s.items.filter((item) => item.id !== itemId),
-          eventItems: s.eventItems.filter(
-            (eventItem) => eventItem.itemId !== itemId
-          ),
-        }));
-      },
+  const removeItem = async (itemId: ItemID) => {
+    return itemId;
+    // TODO REMOVE complete implementation
+  };
 
-      // Events
-      addEvent: (title: string) => {
-        const id = uid();
-        const event = { id, title, creationDate: now() };
-        set((s) => ({ events: [event, ...s.events] }));
-        return id;
-      },
-      removeEvent: (eventId: number) => {
-        set((s) => ({
-          events: s.events.filter((event) => event.id !== eventId),
-          eventItems: s.eventItems.filter(
-            (eventItem) => eventItem.eventId !== eventId
-          ),
-        }));
-      },
+  // Events
+  const addEvent = async (title: string) => {
+    const storageEvents = await getAllEvents();
+    const newStorageEvent: StorageEventType = {
+      id: uid(),
+      title,
+      items: [],
+      creationDate: now(),
+    };
+    storageEvents.push(newStorageEvent);
+    await AsyncStorage.setItem(
+      EVENTS_STORAGE_KEY,
+      JSON.stringify(storageEvents)
+    );
+    const { items, ...rest } = newStorageEvent;
+    return rest as EventType;
+  };
 
-      // EventItems
-      attachItem: (eventId: number, itemId: number) => {
-        const id = uid();
-        const ei = { id, eventId, itemId, addedAt: now() };
-        set((s) => ({ eventItems: [ei, ...s.eventItems] }));
-        return id;
-      },
-      detachItem: (eventItemId: number) => {
-        set((s) => ({
-          eventItems: s.eventItems.filter(
-            (eventItem) => eventItem.id !== eventItemId
-          ),
-        }));
-      },
-      toggleEventItem: (eventItemId: number) => {
-        set((s) => ({
-          eventItems: s.eventItems.map((eventItem) =>
-            eventItem.id === eventItemId
-              ? { ...eventItem, checked: !eventItem.checked }
-              : eventItem
-          ),
-        }));
-      },
-      setEventItemQty: (eventItemId: number) => {
-        set((s) => ({
-          eventItems: s.eventItems.map((eventItem) =>
-            eventItem.id === eventItemId ? { ...eventItem } : eventItem
-          ),
-        }));
-      },
-    }),
-    {
-      name: `take_it_storage_v${version}`,
-      storage,
-      version,
-      // migrate: (state, version) => { ... },
-    }
-  )
-);
+  const removeEvent = async (eventId: EventID) => {
+    return eventId;
+    // TODO REMOVE complete implementation
+  };
+
+  // EventItems
+  const attachItem = async (itemId: number, eventId: number) => {
+    const storageItems = await getAllItems();
+    const storageEvents = await getAllEvents();
+    // TODO REMOVE complete implementation
+    return { itemId, eventId };
+  };
+
+  const detachItem = async (itemId: number, eventId: number) => {
+    // TODO REMOVE complete implementation
+    return { itemId, eventId };
+  };
+
+  return {
+    getAllItems,
+    getAllEvents,
+    addItem,
+    removeItem,
+    addEvent,
+    removeEvent,
+    attachItem,
+    detachItem,
+  };
+};

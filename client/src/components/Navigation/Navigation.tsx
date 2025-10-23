@@ -3,7 +3,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import ItemsCollection from "../../pages/ItemsCollection";
 import EventsCollection from "../../pages/EventsCollection";
 import { useTheme } from "react-native-paper";
-import Icon from "react-native-vector-icons/MaterialIcons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
 
 const Tab = createBottomTabNavigator();
@@ -34,7 +34,7 @@ export default function Navigation() {
           component={EventsCollection}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <Icon name="apps" color={color} size={size} />
+              <MaterialIcons name="apps" color={color} size={size} />
             ),
           }}
         />
@@ -43,7 +43,7 @@ export default function Navigation() {
           component={ItemsCollection}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <Icon name="storage" color={color} size={size} />
+              <MaterialIcons name="storage" color={color} size={size} />
             ),
           }}
         />

@@ -3,32 +3,22 @@ import { ItemID, ItemType } from "../../types/item";
 import { useTakeItStorage } from "../../hooks/useTakeItStorage";
 
 type ItemsCtx = {
-  getItems: () => ItemType[];
-  add: (text: string) => void;
-  remove: (itemId: ItemID) => void;
+  getAllItems: () => Promise<ItemType[]>;
+  addItem: (text: string) => Promise<ItemType>;
+  removeItem: (itemId: ItemID) => Promise<ItemID>;
 };
 
 const ItemsContext = createContext<ItemsCtx | undefined>(undefined);
 
-export const ItemsProvider: React.FC<{ children: React.ReactNode }> = ({
+export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const storage = useTakeItStorage();
-
-  const getItems = () => storage.items;
-
-  const add = (text: string) => {
-    storage.addItem(text);
-  };
-
-  const remove = (itemId: ItemID) => {
-    storage.removeItem(itemId);
-  };
+  const { getAllItems, addItem, removeItem } = useTakeItStorage();
 
   const value: ItemsCtx = {
-    getItems,
-    add,
-    remove,
+    getAllItems,
+    addItem,
+    removeItem,
   };
 
   return (
