@@ -1,4 +1,4 @@
-export type EventID = number;
+export type EventID = string;
 
 export type EventType = {
   id: EventID;

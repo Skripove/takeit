@@ -1,4 +1,4 @@
-export type ItemID = number;
+export type ItemID = string;
 
 export type ItemType = {
   id: ItemID;

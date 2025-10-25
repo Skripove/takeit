@@ -1,18 +1,20 @@
 import { ItemID, ItemType } from "../types/item";
 import { EventID, EventType } from "../types/event";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Crypto from "expo-crypto";
 
-type StorageItemType = ItemType & {
+export type StorageItemType = ItemType & {
   events: EventID[];
 };
 
-type StorageEventType = EventType & {
+export type StorageEventType = EventType & {
   items: ItemID[];
 };
 
 type Storage = {
   getAllItems: () => Promise<ItemType[]>;
   getAllEvents: () => Promise<EventType[]>;
+  seeAllItems: () => Promise<StorageItemType[]>;
   // Items
   addItem: (text: string) => Promise<ItemType>;
   removeItem: (itemId: ItemID) => Promise<ItemID>;
@@ -21,20 +23,23 @@ type Storage = {
   removeEvent: (eventId: EventID) => Promise<ItemID>;
   // Привязка item к событию
   attachItem: (
-    eventId: number,
-    itemId: number
-  ) => Promise<{ eventId: number; itemId: number }>;
+    itemId: ItemID,
+    eventId: EventID
+  ) => Promise<{ itemId: ItemID; eventId: EventID }>;
   detachItem: (
-    itemId: number,
-    eventId: number
-  ) => Promise<{ itemId: number; eventId: number }>;
+    itemId: ItemID,
+    eventId: EventID
+  ) => Promise<{ itemId: ItemID; eventId: EventID }>;
+  // Clear
+  clearItems: () => Promise<void>;
+  clearEvents: () => Promise<void>;
 };
 
 const ITEMS_STORAGE_KEY = "items_storage";
 const EVENTS_STORAGE_KEY = "events_storage";
 
 const now = () => new Date().toISOString();
-const uid = () => Number(Math.random().toString(36).slice(2));
+const uid = () => Crypto.randomUUID();
 
 export const useTakeItStorage = (): Storage => {
   const getAllItems = async () => {
@@ -53,6 +58,13 @@ export const useTakeItStorage = (): Storage => {
     const storageItems = JSON.parse(raw) as StorageEventType[];
     const events: EventType[] = storageItems.map(({ items, ...rest }) => rest);
     return events;
+  };
+
+  const seeAllItems = async () => {
+    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
+    if (!raw) return [];
+    const storageItems = JSON.parse(raw) as StorageItemType[];
+    return storageItems;
   };
 
   // Items
@@ -99,26 +111,37 @@ export const useTakeItStorage = (): Storage => {
   };
 
   // EventItems
-  const attachItem = async (itemId: number, eventId: number) => {
+  const attachItem = async (itemId: ItemID, eventId: EventID) => {
     const storageItems = await getAllItems();
     const storageEvents = await getAllEvents();
     // TODO REMOVE complete implementation
     return { itemId, eventId };
   };
 
-  const detachItem = async (itemId: number, eventId: number) => {
+  const detachItem = async (itemId: ItemID, eventId: EventID) => {
     // TODO REMOVE complete implementation
     return { itemId, eventId };
+  };
+
+  const clearItems = async () => {
+    await AsyncStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify([]));
+  };
+
+  const clearEvents = async () => {
+    await AsyncStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify([]));
   };
 
   return {
     getAllItems,
     getAllEvents,
+    seeAllItems,
     addItem,
     removeItem,
     addEvent,
     removeEvent,
     attachItem,
     detachItem,
+    clearItems,
+    clearEvents,
   };
 };
