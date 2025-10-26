@@ -18,6 +18,7 @@ type Storage = {
   // Items
   addItem: (text: string) => Promise<ItemType>;
   removeItem: (itemId: ItemID) => Promise<ItemID>;
+  removeItems: (itemIds: ItemID[]) => Promise<void>;
   // Events
   addEvent: (title: string) => Promise<EventType>;
   removeEvent: (eventId: EventID) => Promise<ItemID>;
@@ -87,6 +88,19 @@ export const useTakeItStorage = (): Storage => {
     // TODO REMOVE complete implementation
   };
 
+  const removeItems = async (itemIds: ItemID[]) => {
+    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
+    if (!raw) return;
+    const storageItems = JSON.parse(raw) as StorageItemType[];
+    const filteredStorageItems = storageItems.filter(
+      (storageItem) => !itemIds.includes(storageItem.id)
+    );
+    await AsyncStorage.setItem(
+      ITEMS_STORAGE_KEY,
+      JSON.stringify(filteredStorageItems)
+    );
+  };
+
   // Events
   const addEvent = async (title: string) => {
     const storageEvents = await getAllEvents();
@@ -137,6 +151,7 @@ export const useTakeItStorage = (): Storage => {
     seeAllItems,
     addItem,
     removeItem,
+    removeItems,
     addEvent,
     removeEvent,
     attachItem,

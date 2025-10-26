@@ -1,32 +1,45 @@
-import { useState } from "react";
 import { View } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
-import { ItemType } from "../../types/item";
+import { ItemID, ItemType } from "../../types/item";
+import { memo } from "react";
 
 type Props = {
   item: ItemType;
-  onPress: (itemText: string) => void;
+  onPress: (itemId: ItemID) => void;
+  onLongPress?: (itemId: ItemID) => void;
+  withCheckBox?: boolean;
+  selected?: boolean;
 };
 
-export default function Item({ item, onPress }: Props) {
+function Item({ item, onPress, onLongPress, withCheckBox, selected }: Props) {
   const theme = useTheme();
-  const [status, setStatus] = useState<"checked" | "unchecked">(
-    item.checked ? "checked" : "unchecked"
-  );
 
   const onPressHandler = () => {
-    setStatus((prev) => (prev === "checked" ? "unchecked" : "checked"));
-    onPress(item.text);
+    if (!withCheckBox) return;
+    onPress(item.id);
+  };
+
+  const onLongPressHandler = () => {
+    onLongPress?.(item.id);
   };
 
   return (
     <Card
       style={{ marginVertical: 4, elevation: 0, shadowColor: "transparent" }}
       onPress={onPressHandler}
+      onLongPress={onLongPressHandler}
     >
       <Card.Content>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Checkbox status={status} />
+          {withCheckBox && (
+            <View
+              style={{
+                margin: -9,
+              }}
+            >
+              <Checkbox status={selected ? "checked" : "unchecked"} />
+            </View>
+          )}
           <Text style={{ marginLeft: 12, flex: 1, flexShrink: 1 }}>
             {item.text}
           </Text>
@@ -35,3 +48,12 @@ export default function Item({ item, onPress }: Props) {
     </Card>
   );
 }
+
+const areEqual = (prev: Props, next: Props) => {
+  if (prev.selected !== next.selected) return false;
+  if (prev.withCheckBox !== next.withCheckBox) return false;
+  if (prev.item.text !== next.item.text) return false;
+  return true;
+};
+
+export default memo(Item, areEqual);
