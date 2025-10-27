@@ -5,13 +5,15 @@ import { darkTheme, lightTheme } from "../../theme/colors";
 import MainScreen from "../MainScreen";
 import {
   AddItemModal,
+  AddItemsToEventsModal,
   DeleteItemModal,
   FloatingButton,
   Item,
 } from "../../components";
-import { ItemsContext } from "../../provider";
+import { EventsContext, ItemsContext } from "../../provider";
 import { ItemID, ItemType } from "../../types/item";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
+import { EventID } from "../../types/event";
 
 const titles = {
   storage: "Storage",
@@ -22,12 +24,15 @@ export default function ItemsCollection() {
   const theme = useTheme();
   const { getAllItems, seeAllItems, addItem, removeItems, clearItems } =
     useContext(ItemsContext);
+  const { attachItems } = useContext(EventsContext);
 
   const [items, setItems] = useState<ItemType[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<ItemID>>(new Set());
 
   const [showAddItemModal, setShowAddItemModal] = useState(false);
   const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
+  const [showAddItemsToEventsModal, setShowAddItemsToEventsModal] =
+    useState(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -60,12 +65,20 @@ export default function ItemsCollection() {
     setShowDeleteItemModal(true);
   };
 
+  const handleShowAddItemsToEventsModal = () => {
+    setShowAddItemsToEventsModal(true);
+  };
+
   const hideAddItemModal = () => {
     setShowAddItemModal(false);
   };
 
   const hideDeleteItemModal = () => {
     setShowDeleteItemModal(false);
+  };
+
+  const hideShowAddItemsToEventsModal = () => {
+    setShowAddItemsToEventsModal(false);
   };
 
   const onAddItem = async (title: string) => {
@@ -82,6 +95,11 @@ export default function ItemsCollection() {
     clearSelection();
   };
 
+  const onAddItemsToEvents = async (selecyedEventIds: EventID[]) => {
+    const selestedItemIds = Array.from(selectedIds);
+    await attachItems(selestedItemIds, selecyedEventIds);
+  };
+
   const onLongPressItem = useCallback(() => {
     setIsEditMode(true);
   }, []);
@@ -92,7 +110,7 @@ export default function ItemsCollection() {
         <Appbar.Content title={isEditMode ? titles.editMode : titles.storage} />
         {isEditMode && (
           <Appbar.Action
-            icon="dots-vertical"
+            icon="close"
             onPress={() => {
               setIsEditMode(false);
               clearSelection();
@@ -120,14 +138,14 @@ export default function ItemsCollection() {
       {isEditMode ? (
         <View>
           <FloatingButton
-            // onPress={showModal}
+            onPress={handleShowAddItemsToEventsModal}
             icon="plus"
-            label="Add to event..."
+            label="Add to Event..."
             disabled={!Boolean(selectedIds.size)}
           />
           <FloatingButton
             onPress={handleShowDeleteItemModal}
-            icon="delete"
+            icon="delete-outline"
             disabled={!Boolean(selectedIds.size)}
             position={FABPosition.fabBottomRight}
             style={{ backgroundColor: theme.colors.errorContainer }}
@@ -150,6 +168,11 @@ export default function ItemsCollection() {
         visible={showDeleteItemModal}
         onDismiss={hideDeleteItemModal}
         onSubmit={onDeleteItems}
+      />
+      <AddItemsToEventsModal
+        visible={showAddItemsToEventsModal}
+        onDismiss={hideShowAddItemsToEventsModal}
+        onSubmit={onAddItemsToEvents}
       />
     </MainScreen>
   );

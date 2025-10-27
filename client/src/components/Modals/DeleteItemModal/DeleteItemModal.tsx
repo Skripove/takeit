@@ -61,7 +61,7 @@ const DeleteItemModal: React.FC<DeleteItemModalProps> = ({
         />
         <View style={{ gap: 50 }}>
           <Text variant="titleLarge">
-            Are you sure you want to delete selected items?
+            Are you sure you want to delete selected Items?
           </Text>
           <Button
             mode="contained"

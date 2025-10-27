@@ -1,1 +1,2 @@
-export { ItemsContext, ItemsProvider } from "./ItemsProvider/ItemsProvider";
+export { ItemsContext, ItemsProvider } from "./ItemsProvider";
+export { EventsContext, EventsProvider } from "./EventsProvider";

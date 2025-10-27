@@ -66,6 +66,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
           accessibilityLabel="Close"
           disabled={loading}
         />
+        <Text variant="titleLarge">Add Item:</Text>
         <View style={{ gap: 50 }}>
           <TextInput
             mode="outlined"

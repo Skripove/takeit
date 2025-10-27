@@ -1,9 +1,6 @@
 import React, { createContext } from "react";
-import { ItemID, ItemType } from "../../types/item";
-import {
-  StorageItemType,
-  useTakeItStorage,
-} from "../../hooks/useTakeItStorage";
+import { ItemID, ItemType } from "../types/item";
+import { StorageItemType, useTakeItStorage } from "../hooks/useTakeItStorage";
 
 type ItemsCtx = {
   getAllItems: () => Promise<ItemType[]>;
@@ -35,14 +32,17 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
     clearItems,
   } = useTakeItStorage();
 
-  const value: ItemsCtx = {
-    getAllItems,
-    seeAllItems,
-    addItem,
-    removeItem,
-    removeItems,
-    clearItems,
-  };
+  const value = React.useMemo<ItemsCtx>(
+    () => ({
+      getAllItems,
+      seeAllItems,
+      addItem,
+      removeItem,
+      removeItems,
+      clearItems,
+    }),
+    [getAllItems, seeAllItems, addItem, removeItem, removeItems, clearItems]
+  );
 
   return (
     <ItemsContext.Provider value={value}>{children}</ItemsContext.Provider>
