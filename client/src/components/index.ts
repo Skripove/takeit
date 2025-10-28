@@ -1,4 +1,5 @@
 export { default as Item } from "./Item";
+export { default as Event } from "./Event";
 
 export { FloatingButton } from "./Buttons";
-export { AddItemModal, DeleteItemModal, AddItemsToEventsModal } from "./Modals";
+export { AddModal, DeleteModal, AddItemsToEventsModal } from "./Modals";

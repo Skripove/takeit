@@ -39,6 +39,7 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
   useEffect(() => {
     (async () => {
       try {
+        console.log("Fetching Events in AddItemsToEventsModal...");
         // const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; //TODO REMOVE
         // for (const a of arr) {
         //   await addEvent(`Event - ${a}`);
@@ -51,7 +52,7 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
         console.error(e);
       }
     })();
-  }, []);
+  }, [getAllEvents]);
 
   const toggle = (eventID: EventID) => {
     setSelectedEventIds((prev) => {

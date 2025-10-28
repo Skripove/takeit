@@ -5,19 +5,20 @@ import {
   Portal,
   Modal,
   Text,
-  TextInput,
   IconButton,
   Button,
 } from "react-native-paper";
 
-export type AddItemModalProps = Omit<
+export type DeleteModalProps = Omit<
   React.ComponentProps<typeof Modal>,
   "children"
 > & {
-  onSubmit: (title: string) => Promise<void>;
+  title: string;
+  onSubmit: () => Promise<void>;
 };
 
-const AddItemModal: React.FC<AddItemModalProps> = ({
+const DeleteModal: React.FC<DeleteModalProps> = ({
+  title,
   onSubmit,
   onDismiss,
   ...props
@@ -25,16 +26,11 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
   const theme = useTheme();
 
   const [loading, setLoading] = useState(false);
-  const [title, setTitle] = useState("");
 
   const submitHandler = async () => {
-    if (!title) {
-      return;
-    }
-
     try {
       setLoading(true);
-      await onSubmit(title);
+      await onSubmit();
       onClose();
     } finally {
       setLoading(false);
@@ -44,7 +40,6 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
   const onClose = () => {
     if (loading) return;
     onDismiss?.();
-    setTitle("");
   };
 
   return (
@@ -66,24 +61,16 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
           accessibilityLabel="Close"
           disabled={loading}
         />
-        <Text variant="titleLarge">Add Item:</Text>
         <View style={{ gap: 50 }}>
-          <TextInput
-            mode="outlined"
-            label="Title"
-            value={title}
-            onChangeText={setTitle}
-            autoFocus
-            disabled={loading}
-          />
+          <Text variant="titleLarge">{title}</Text>
           <Button
             mode="contained"
             loading={loading}
-            disabled={!title || loading}
+            disabled={loading}
             onPress={submitHandler}
             contentStyle={{ height: 56 }}
           >
-            Add
+            Delete
           </Button>
         </View>
       </Modal>
@@ -91,7 +78,7 @@ const AddItemModal: React.FC<AddItemModalProps> = ({
   );
 };
 
-export default AddItemModal;
+export default DeleteModal;
 
 // Styles
 const styles = StyleSheet.create({

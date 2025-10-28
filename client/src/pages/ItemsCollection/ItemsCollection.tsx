@@ -1,19 +1,19 @@
 import { useState, useContext, useEffect, useCallback } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
-import { Appbar, Text, TextInput, useTheme } from "react-native-paper";
+import { Appbar, useTheme } from "react-native-paper";
 import { darkTheme, lightTheme } from "../../theme/colors";
 import MainScreen from "../MainScreen";
 import {
-  AddItemModal,
+  AddModal,
   AddItemsToEventsModal,
-  DeleteItemModal,
+  DeleteModal,
   FloatingButton,
   Item,
 } from "../../components";
 import { EventsContext, ItemsContext } from "../../provider";
 import { ItemID, ItemType } from "../../types/item";
-import { FABPosition } from "../../components/Buttons/FloatingButton";
 import { EventID } from "../../types/event";
+import { FABPosition } from "../../components/Buttons/FloatingButton";
 
 const titles = {
   storage: "Storage",
@@ -30,7 +30,7 @@ export default function ItemsCollection() {
   const [selectedIds, setSelectedIds] = useState<Set<ItemID>>(new Set());
 
   const [showAddItemModal, setShowAddItemModal] = useState(false);
-  const [showDeleteItemModal, setShowDeleteItemModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showAddItemsToEventsModal, setShowAddItemsToEventsModal] =
     useState(false);
 
@@ -39,13 +39,14 @@ export default function ItemsCollection() {
   useEffect(() => {
     (async () => {
       try {
+        console.log("Fetching Items in ItemsCollection...");
         const allItems = await getAllItems();
         setItems(allItems);
       } catch (e) {
         console.error(e);
       }
     })();
-  }, []);
+  }, [getAllItems]);
 
   const toggleSelect = useCallback((itemId: ItemID) => {
     setSelectedIds((prev) => {
@@ -61,8 +62,8 @@ export default function ItemsCollection() {
     setShowAddItemModal(true);
   };
 
-  const handleShowDeleteItemModal = () => {
-    setShowDeleteItemModal(true);
+  const handleShowDeleteModal = () => {
+    setShowDeleteModal(true);
   };
 
   const handleShowAddItemsToEventsModal = () => {
@@ -73,8 +74,8 @@ export default function ItemsCollection() {
     setShowAddItemModal(false);
   };
 
-  const hideDeleteItemModal = () => {
-    setShowDeleteItemModal(false);
+  const hideDeleteModal = () => {
+    setShowDeleteModal(false);
   };
 
   const hideShowAddItemsToEventsModal = () => {
@@ -135,6 +136,7 @@ export default function ItemsCollection() {
         )}
         contentContainerStyle={{ padding: 12 }}
       />
+
       {isEditMode ? (
         <View>
           <FloatingButton
@@ -144,7 +146,7 @@ export default function ItemsCollection() {
             disabled={!Boolean(selectedIds.size)}
           />
           <FloatingButton
-            onPress={handleShowDeleteItemModal}
+            onPress={handleShowDeleteModal}
             icon="delete-outline"
             disabled={!Boolean(selectedIds.size)}
             position={FABPosition.fabBottomRight}
@@ -159,14 +161,17 @@ export default function ItemsCollection() {
           disabled={isEditMode}
         />
       )}
-      <AddItemModal
+
+      <AddModal
+        title="Add Item:"
         visible={showAddItemModal}
         onDismiss={hideAddItemModal}
         onSubmit={onAddItem}
       />
-      <DeleteItemModal
-        visible={showDeleteItemModal}
-        onDismiss={hideDeleteItemModal}
+      <DeleteModal
+        title="Are you sure you want to delete selected Items?"
+        visible={showDeleteModal}
+        onDismiss={hideDeleteModal}
         onSubmit={onDeleteItems}
       />
       <AddItemsToEventsModal

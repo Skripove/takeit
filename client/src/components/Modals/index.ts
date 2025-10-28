@@ -1,3 +1,3 @@
-export { default as AddItemModal } from "./AddItemModal";
-export { default as DeleteItemModal } from "./DeleteItemModal";
+export { default as AddModal } from "./AddModal";
+export { default as DeleteModal } from "./DeleteModal";
 export { default as AddItemsToEventsModal } from "./AddItemsToEventsModal";

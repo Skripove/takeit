@@ -24,6 +24,7 @@ type Storage = {
   // Events
   addEvent: (title: string) => Promise<EventType>;
   removeEvent: (eventId: EventID) => Promise<EventID>;
+  removeEvents: (eventIds: EventID[]) => Promise<void>;
   // Привязка item к событию
   attachItems: (itemIds: ItemID[], eventIds: EventID[]) => Promise<void>;
   detachItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
@@ -136,13 +137,26 @@ export const useTakeItStorage = (): Storage => {
     if (!raw) return eventId;
     const storageEvents = JSON.parse(raw) as StorageEventType[];
     const filteredStorageEvents = storageEvents.filter(
-      (storageItem) => storageItem.id !== eventId
+      (storageEvent) => storageEvent.id !== eventId
     );
     await AsyncStorage.setItem(
       EVENTS_STORAGE_KEY,
       JSON.stringify(filteredStorageEvents)
     );
     return eventId;
+  }, []);
+
+  const removeEvents = useCallback(async (eventIds: EventID[]) => {
+    const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
+    if (!raw) return;
+    const storageEvents = JSON.parse(raw) as StorageEventType[];
+    const filteredStorageEvents = storageEvents.filter(
+      (storageEvent) => !eventIds.includes(storageEvent.id)
+    );
+    await AsyncStorage.setItem(
+      EVENTS_STORAGE_KEY,
+      JSON.stringify(filteredStorageEvents)
+    );
   }, []);
 
   // EventItems
@@ -215,6 +229,7 @@ export const useTakeItStorage = (): Storage => {
     removeItems,
     addEvent,
     removeEvent,
+    removeEvents,
     attachItems,
     detachItems,
     clearItems,

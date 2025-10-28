@@ -5,18 +5,21 @@ import {
   Portal,
   Modal,
   Text,
+  TextInput,
   IconButton,
   Button,
 } from "react-native-paper";
 
-export type DeleteItemModalProps = Omit<
+export type AddModalProps = Omit<
   React.ComponentProps<typeof Modal>,
   "children"
 > & {
-  onSubmit: () => Promise<void>;
+  title: string;
+  onSubmit: (title: string) => Promise<void>;
 };
 
-const DeleteItemModal: React.FC<DeleteItemModalProps> = ({
+const AddModal: React.FC<AddModalProps> = ({
+  title,
   onSubmit,
   onDismiss,
   ...props
@@ -24,11 +27,16 @@ const DeleteItemModal: React.FC<DeleteItemModalProps> = ({
   const theme = useTheme();
 
   const [loading, setLoading] = useState(false);
+  const [text, setText] = useState("");
 
   const submitHandler = async () => {
+    if (!text) {
+      return;
+    }
+
     try {
       setLoading(true);
-      await onSubmit();
+      await onSubmit(text);
       onClose();
     } finally {
       setLoading(false);
@@ -38,6 +46,7 @@ const DeleteItemModal: React.FC<DeleteItemModalProps> = ({
   const onClose = () => {
     if (loading) return;
     onDismiss?.();
+    setText("");
   };
 
   return (
@@ -59,18 +68,24 @@ const DeleteItemModal: React.FC<DeleteItemModalProps> = ({
           accessibilityLabel="Close"
           disabled={loading}
         />
+        <Text variant="titleLarge">{title}</Text>
         <View style={{ gap: 50 }}>
-          <Text variant="titleLarge">
-            Are you sure you want to delete selected Items?
-          </Text>
+          <TextInput
+            mode="outlined"
+            label="Title"
+            value={text}
+            onChangeText={setText}
+            autoFocus
+            disabled={loading}
+          />
           <Button
             mode="contained"
             loading={loading}
-            disabled={loading}
+            disabled={!text || loading}
             onPress={submitHandler}
             contentStyle={{ height: 56 }}
           >
-            Delete
+            Add
           </Button>
         </View>
       </Modal>
@@ -78,7 +93,7 @@ const DeleteItemModal: React.FC<DeleteItemModalProps> = ({
   );
 };
 
-export default DeleteItemModal;
+export default AddModal;
 
 // Styles
 const styles = StyleSheet.create({

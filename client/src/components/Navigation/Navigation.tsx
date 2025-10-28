@@ -30,7 +30,7 @@ export default function Navigation() {
         }}
       >
         <Tab.Screen
-          name="Events"
+          name="EventsCollection"
           component={EventsCollection}
           options={{
             tabBarIcon: ({ color, size }) => (
@@ -39,7 +39,7 @@ export default function Navigation() {
           }}
         />
         <Tab.Screen
-          name="Storage"
+          name="ItemsCollection"
           component={ItemsCollection}
           options={{
             tabBarIcon: ({ color, size }) => (

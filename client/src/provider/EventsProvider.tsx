@@ -8,6 +8,7 @@ type EventsCtx = {
   seeAllEvents: () => Promise<StorageEventType[]>;
   addEvent: (title: string) => Promise<EventType>;
   removeEvent: (eventId: EventID) => Promise<EventID>;
+  removeEvents: (eventIds: EventID[]) => Promise<void>;
   clearEvents: () => Promise<void>;
   attachItems: (itemIds: ItemID[], eventIds: EventID[]) => Promise<void>;
   detachItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
@@ -18,6 +19,7 @@ export const EventsContext = createContext<EventsCtx>({
   seeAllEvents: async () => [],
   addEvent: async () => ({}) as EventType,
   removeEvent: async () => "",
+  removeEvents: async () => undefined,
   attachItems: async () => {},
   detachItems: async () => {},
   clearEvents: async () => {},
@@ -31,6 +33,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
     seeAllEvents,
     addEvent,
     removeEvent,
+    removeEvents,
     clearEvents,
     attachItems,
     detachItems,
@@ -42,6 +45,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       seeAllEvents,
       addEvent,
       removeEvent,
+      removeEvents,
       attachItems,
       detachItems,
       clearEvents,
@@ -51,6 +55,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       seeAllEvents,
       addEvent,
       removeEvent,
+      removeEvents,
       attachItems,
       detachItems,
       clearEvents,
