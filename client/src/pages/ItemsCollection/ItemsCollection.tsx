@@ -101,8 +101,13 @@ export default function ItemsCollection() {
     await attachItems(selestedItemIds, selecyedEventIds);
   };
 
-  const onLongPressItem = useCallback(() => {
+  const onEditItems = useCallback(() => {
     setIsEditMode(true);
+  }, []);
+
+  const onCloseEditItems = useCallback(() => {
+    setIsEditMode(false);
+    clearSelection();
   }, []);
 
   return (
@@ -110,13 +115,7 @@ export default function ItemsCollection() {
       <Appbar.Header mode="center-aligned">
         <Appbar.Content title={isEditMode ? titles.editMode : titles.storage} />
         {isEditMode && (
-          <Appbar.Action
-            icon="close"
-            onPress={() => {
-              setIsEditMode(false);
-              clearSelection();
-            }}
-          />
+          <Appbar.Action icon="close" onPress={onCloseEditItems} />
         )}
       </Appbar.Header>
 
@@ -128,7 +127,7 @@ export default function ItemsCollection() {
             <Item
               item={item}
               onPress={toggleSelect}
-              onLongPress={onLongPressItem}
+              onLongPress={onEditItems}
               withCheckBox={isEditMode}
               selected={selectedIds.has(item.id)}
             />
@@ -149,17 +148,29 @@ export default function ItemsCollection() {
             onPress={handleShowDeleteModal}
             icon="delete-outline"
             disabled={!Boolean(selectedIds.size)}
-            position={FABPosition.fabBottomRight}
+            position={FABPosition.fabBottomRightSecond}
             style={{ backgroundColor: theme.colors.errorContainer }}
             color={theme.colors.onErrorContainer}
           />
+          <FloatingButton
+            onPress={onCloseEditItems}
+            icon="close"
+            position={FABPosition.fabBottomRight}
+          />
         </View>
       ) : (
-        <FloatingButton
-          onPress={handleShowAddItemModal}
-          icon="plus"
-          disabled={isEditMode}
-        />
+        <View>
+          <FloatingButton
+            onPress={handleShowAddItemModal}
+            icon="plus"
+            disabled={isEditMode}
+          />
+          <FloatingButton
+            onPress={onEditItems}
+            icon="clipboard-edit-outline"
+            position={FABPosition.fabBottomRight}
+          />
+        </View>
       )}
 
       <AddModal

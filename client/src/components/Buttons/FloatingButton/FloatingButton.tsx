@@ -5,6 +5,7 @@ import { FAB } from "react-native-paper";
 export enum FABPosition {
   fabBottomCenter = "fabBottomCenter",
   fabBottomRight = "fabBottomRight",
+  fabBottomRightSecond = "fabBottomRightSecond",
 }
 
 export type FloatingButtonProps = React.ComponentProps<typeof FAB> & {
@@ -31,6 +32,12 @@ const styles = StyleSheet.create({
   fabBottomRight: {
     position: "absolute",
     bottom: 16,
+    right: 12,
+    alignSelf: "flex-end",
+  },
+  fabBottomRightSecond: {
+    position: "absolute",
+    bottom: 86,
     right: 12,
     alignSelf: "flex-end",
   },

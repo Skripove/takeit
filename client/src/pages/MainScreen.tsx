@@ -14,7 +14,7 @@ export default function MainScreen({ children }: Props) {
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: theme.colors.background }}
-      edges={["top", "left", "right"]}
+      edges={["left", "right"]}
     >
       <StatusBar translucent={false} barStyle="dark-content" />
       <View style={{ flex: 1, paddingHorizontal: 16 }}>{children}</View>

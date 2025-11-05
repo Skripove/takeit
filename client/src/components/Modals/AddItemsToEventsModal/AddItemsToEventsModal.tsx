@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import {
   useTheme,
   Portal,
@@ -104,7 +104,14 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
         <View style={{ gap: 50 }}>
           <Text variant="titleLarge">Select the Events:</Text>
           <ScrollView style={{ maxHeight: 300 }}>
-            <View style={{ gap: 24, alignItems: "center" }}>
+            <View
+              style={{
+                gap: 24,
+                alignItems: "center",
+                paddingTop: 16,
+                paddingBottom: 16,
+              }}
+            >
               {events.map((event) => {
                 const selected = selectedEventIds.has(event.id);
                 return (
@@ -113,6 +120,7 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
                     onPress={() => toggle(event.id)}
                     mode="outlined"
                     icon={selected ? "plus" : undefined}
+                    style={{ opacity: Platform.OS === "ios" ? 0.6 : 1 }}
                   >
                     {event.title}
                   </Chip>
