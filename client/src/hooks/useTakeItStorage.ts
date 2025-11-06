@@ -19,11 +19,9 @@ type Storage = {
   seeAllEvents: () => Promise<StorageEventType[]>;
   // Items
   addItem: (text: string) => Promise<ItemType>;
-  removeItem: (itemId: ItemID) => Promise<ItemID>;
   removeItems: (itemIds: ItemID[]) => Promise<void>;
   // Events
   addEvent: (title: string) => Promise<EventType>;
-  removeEvent: (eventId: EventID) => Promise<EventID>;
   removeEvents: (eventIds: EventID[]) => Promise<void>;
   // Привязка item к событию
   attachItems: (itemIds: ItemID[], eventIds: EventID[]) => Promise<void>;
@@ -53,8 +51,8 @@ export const useTakeItStorage = (): Storage => {
   const getAllEvents = useCallback(async () => {
     const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
     if (!raw) return [];
-    const storageItems = JSON.parse(raw) as StorageEventType[];
-    const events: EventType[] = storageItems.map(({ items, ...rest }) => rest);
+    const storageEvents = JSON.parse(raw) as StorageEventType[];
+    const events: EventType[] = storageEvents.map(({ items, ...rest }) => rest);
     return events;
   }, []);
 
@@ -87,36 +85,42 @@ export const useTakeItStorage = (): Storage => {
     return rest as ItemType;
   }, []);
 
-  const removeItem = useCallback(async (itemId: ItemID) => {
-    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
-    if (!raw) return itemId;
-    const storageItems = JSON.parse(raw) as StorageItemType[];
-    const filteredStorageItems = storageItems.filter(
-      (storageItem) => storageItem.id !== itemId
-    );
-    await AsyncStorage.setItem(
-      ITEMS_STORAGE_KEY,
-      JSON.stringify(filteredStorageItems)
-    );
-    return itemId;
-  }, []);
-
   const removeItems = useCallback(async (itemIds: ItemID[]) => {
-    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
-    if (!raw) return;
-    const storageItems = JSON.parse(raw) as StorageItemType[];
-    const filteredStorageItems = storageItems.filter(
-      (storageItem) => !itemIds.includes(storageItem.id)
+    const rawEvents = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
+    const rawItems = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
+    if (!rawEvents || !rawItems) return;
+
+    const stEvents = JSON.parse(rawEvents) as StorageEventType[];
+    const stItems = JSON.parse(rawItems) as StorageItemType[];
+    console.log(stEvents);
+
+    const updatedStEvents = stEvents.map((stEvent) => {
+      const updatedItems = stEvent.items.filter(
+        (itemId) => !itemIds.includes(itemId)
+      );
+      return { ...stEvent, items: updatedItems };
+    });
+
+    const filteredStItems = stItems.filter(
+      (stItem) => !itemIds.includes(stItem.id)
     );
+
+    await AsyncStorage.setItem(
+      EVENTS_STORAGE_KEY,
+      JSON.stringify(updatedStEvents)
+    );
+
     await AsyncStorage.setItem(
       ITEMS_STORAGE_KEY,
-      JSON.stringify(filteredStorageItems)
+      JSON.stringify(filteredStItems)
     );
   }, []);
 
   // Events
   const addEvent = useCallback(async (title: string) => {
-    const storageEvents = await getAllEvents();
+    const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
+    if (!raw) throw new Error("Can't get storage events");
+    const storageEvents = JSON.parse(raw) as StorageEventType[];
     const newStorageEvent: StorageEventType = {
       id: uid(),
       title,
@@ -130,20 +134,6 @@ export const useTakeItStorage = (): Storage => {
     );
     const { items, ...rest } = newStorageEvent;
     return rest as EventType;
-  }, []);
-
-  const removeEvent = useCallback(async (eventId: EventID) => {
-    const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!raw) return eventId;
-    const storageEvents = JSON.parse(raw) as StorageEventType[];
-    const filteredStorageEvents = storageEvents.filter(
-      (storageEvent) => storageEvent.id !== eventId
-    );
-    await AsyncStorage.setItem(
-      EVENTS_STORAGE_KEY,
-      JSON.stringify(filteredStorageEvents)
-    );
-    return eventId;
   }, []);
 
   const removeEvents = useCallback(async (eventIds: EventID[]) => {
@@ -225,10 +215,8 @@ export const useTakeItStorage = (): Storage => {
     seeAllItems,
     seeAllEvents,
     addItem,
-    removeItem,
     removeItems,
     addEvent,
-    removeEvent,
     removeEvents,
     attachItems,
     detachItems,

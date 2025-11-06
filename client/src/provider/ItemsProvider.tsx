@@ -6,7 +6,6 @@ type ItemsCtx = {
   getAllItems: () => Promise<ItemType[]>;
   seeAllItems: () => Promise<StorageItemType[]>;
   addItem: (text: string) => Promise<ItemType>;
-  removeItem: (itemId: ItemID) => Promise<ItemID>;
   removeItems: (itemIds: ItemID[]) => Promise<void>;
   clearItems: () => Promise<void>;
 };
@@ -15,7 +14,6 @@ export const ItemsContext = createContext<ItemsCtx>({
   getAllItems: async () => [],
   seeAllItems: async () => [],
   addItem: async () => ({}) as ItemType,
-  removeItem: async () => "",
   removeItems: async () => undefined,
   clearItems: async () => {},
 });
@@ -23,25 +21,18 @@ export const ItemsContext = createContext<ItemsCtx>({
 export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const {
-    getAllItems,
-    seeAllItems,
-    addItem,
-    removeItem,
-    removeItems,
-    clearItems,
-  } = useTakeItStorage();
+  const { getAllItems, seeAllItems, addItem, removeItems, clearItems } =
+    useTakeItStorage();
 
   const value = React.useMemo<ItemsCtx>(
     () => ({
       getAllItems,
       seeAllItems,
       addItem,
-      removeItem,
       removeItems,
       clearItems,
     }),
-    [getAllItems, seeAllItems, addItem, removeItem, removeItems, clearItems]
+    [getAllItems, seeAllItems, addItem, removeItems, clearItems]
   );
 
   return (

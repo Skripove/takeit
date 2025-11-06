@@ -26,7 +26,7 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
 }) => {
   const theme = useTheme();
 
-  const { getAllEvents, addEvent, removeEvent, clearEvents } =
+  const { getAllEvents, addEvent, removeEvents, clearEvents } =
     useContext(EventsContext);
 
   const [loading, setLoading] = useState(false);
@@ -40,14 +40,8 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
     (async () => {
       try {
         console.log("Fetching Events in AddItemsToEventsModal...");
-        // const arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; //TODO REMOVE
-        // for (const a of arr) {
-        //   await addEvent(`Event - ${a}`);
-        // }
-        // await clearEvents();
         const allEvents = await getAllEvents(); //TODO REMOVE move Items and Event preload into providers
         setEvents(allEvents);
-        // console.log(events); //TODO REMOVE
       } catch (e) {
         console.error(e);
       }
