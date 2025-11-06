@@ -26,27 +26,13 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
 }) => {
   const theme = useTheme();
 
-  const { getAllEvents, addEvent, removeEvents, clearEvents } =
-    useContext(EventsContext);
+  const { events } = useContext(EventsContext);
 
   const [loading, setLoading] = useState(false);
 
-  const [events, setEvents] = useState<EventType[]>([]);
   const [selectedEventIds, setSelectedEventIds] = useState<Set<EventID>>(
     new Set()
   );
-
-  useEffect(() => {
-    (async () => {
-      try {
-        console.log("Fetching Events in AddItemsToEventsModal...");
-        const allEvents = await getAllEvents(); //TODO REMOVE move Items and Event preload into providers
-        setEvents(allEvents);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [getAllEvents]);
 
   const toggle = (eventID: EventID) => {
     setSelectedEventIds((prev) => {

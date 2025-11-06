@@ -1,20 +1,22 @@
-import React, { createContext } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import { ItemID, ItemType } from "../types/item";
 import { StorageItemType, useTakeItStorage } from "../hooks/useTakeItStorage";
 
 type ItemsCtx = {
+  items: ItemType[];
   getAllItems: () => Promise<ItemType[]>;
   seeAllItems: () => Promise<StorageItemType[]>;
   addItem: (text: string) => Promise<ItemType>;
-  removeItems: (itemIds: ItemID[]) => Promise<void>;
+  deleteItems: (itemIds: ItemID[]) => Promise<void>;
   clearItems: () => Promise<void>;
 };
 
 export const ItemsContext = createContext<ItemsCtx>({
+  items: [],
   getAllItems: async () => [],
   seeAllItems: async () => [],
   addItem: async () => ({}) as ItemType,
-  removeItems: async () => undefined,
+  deleteItems: async () => undefined,
   clearItems: async () => {},
 });
 
@@ -24,15 +26,50 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
   const { getAllItems, seeAllItems, addItem, removeItems, clearItems } =
     useTakeItStorage();
 
+  const [items, setItems] = useState<ItemType[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        console.log("Fetching Items - provider...");
+        const allItems = await getAllItems();
+        setItems(allItems);
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [getAllItems]);
+
+  const addItemHandler = useCallback(async (title: string) => {
+    const newItem = await addItem(title);
+    setItems((prev) => [...prev, newItem]);
+    return newItem;
+  }, []);
+
+  const deleteItemsHandler = useCallback(async (itemIds: ItemID[]) => {
+    await removeItems(itemIds);
+    setItems((prev) =>
+      prev.filter((prevItem) => !itemIds.includes(prevItem.id))
+    );
+  }, []);
+
   const value = React.useMemo<ItemsCtx>(
     () => ({
+      items,
       getAllItems,
       seeAllItems,
-      addItem,
-      removeItems,
+      addItem: addItemHandler,
+      deleteItems: deleteItemsHandler,
       clearItems,
     }),
-    [getAllItems, seeAllItems, addItem, removeItems, clearItems]
+    [
+      items,
+      getAllItems,
+      seeAllItems,
+      addItemHandler,
+      deleteItemsHandler,
+      clearItems,
+    ]
   );
 
   return (

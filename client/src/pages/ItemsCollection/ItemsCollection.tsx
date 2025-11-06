@@ -22,11 +22,9 @@ const titles = {
 
 export default function ItemsCollection() {
   const theme = useTheme();
-  const { getAllItems, seeAllItems, addItem, removeItems, clearItems } =
-    useContext(ItemsContext);
+  const { items, addItem, deleteItems } = useContext(ItemsContext);
   const { attachItems } = useContext(EventsContext);
 
-  const [items, setItems] = useState<ItemType[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<ItemID>>(new Set());
 
   const [showAddItemModal, setShowAddItemModal] = useState(false);
@@ -35,18 +33,6 @@ export default function ItemsCollection() {
     useState(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        console.log("Fetching Items in ItemsCollection...");
-        const allItems = await getAllItems();
-        setItems(allItems);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [getAllItems]);
 
   const toggleSelect = useCallback((itemId: ItemID) => {
     setSelectedIds((prev) => {
@@ -83,16 +69,12 @@ export default function ItemsCollection() {
   };
 
   const onAddItem = async (title: string) => {
-    const newItem = await addItem(title);
-    setItems((prev) => [...prev, newItem]);
+    await addItem(title);
   };
 
   const onDeleteItems = async () => {
     const selestedItemIds = Array.from(selectedIds);
-    await removeItems(selestedItemIds);
-    setItems((prev) =>
-      prev.filter((prevItem) => !selestedItemIds.includes(prevItem.id))
-    );
+    await deleteItems(selestedItemIds);
     clearSelection();
   };
 

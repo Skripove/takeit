@@ -14,9 +14,8 @@ const GAP = 16;
 
 export default function EventsCollection() {
   const theme = useTheme();
-  const { getAllEvents, addEvent, removeEvents } = useContext(EventsContext);
+  const { events, addEvent, deleteEvents } = useContext(EventsContext);
 
-  const [events, setEvents] = useState<EventType[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<EventID>>(new Set());
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
@@ -25,18 +24,6 @@ export default function EventsCollection() {
   const insets = useSafeAreaInsets();
   const tabBar = useBottomTabBarHeight?.() ?? 0;
   const bottomSpacer = insets.bottom + tabBar + FAB_HEIGHT + GAP;
-
-  useEffect(() => {
-    (async () => {
-      try {
-        console.log("Fetching Events in EventsCollection...");
-        const allEvents = await getAllEvents(); //TODO REMOVE move Items and Event preload into providers
-        setEvents(allEvents);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [getAllEvents]);
 
   const toggleSelect = useCallback((eventId: EventID) => {
     setSelectedIds((prev) => {
@@ -69,16 +56,12 @@ export default function EventsCollection() {
   };
 
   const onAddEvent = async (title: string) => {
-    const newEvent = await addEvent(title);
-    setEvents((prev) => [...prev, newEvent]);
+    await addEvent(title);
   };
 
   const onDeleteEvents = async () => {
     const selestedEventIds = Array.from(selectedIds);
-    await removeEvents(selestedEventIds);
-    setEvents((prev) =>
-      prev.filter((prevEvent) => !selestedEventIds.includes(prevEvent.id))
-    );
+    await deleteEvents(selestedEventIds);
     clearSelection();
   };
 

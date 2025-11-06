@@ -12,11 +12,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider theme={isDark ? darkTheme : lightTheme}>
-        <ItemsProvider>
-          <EventsProvider>
+        <EventsProvider>
+          <ItemsProvider>
             <Navigation />
-          </EventsProvider>
-        </ItemsProvider>
+          </ItemsProvider>
+        </EventsProvider>
       </PaperProvider>
     </SafeAreaProvider>
   );
