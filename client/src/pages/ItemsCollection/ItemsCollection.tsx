@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useCallback } from "react";
+import { useState, useContext, useCallback } from "react";
 import { View, FlatList, StyleSheet } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import { darkTheme, lightTheme } from "../../theme/colors";
@@ -11,7 +11,7 @@ import {
   Item,
 } from "../../components";
 import { EventsContext, ItemsContext } from "../../provider";
-import { ItemID, ItemType } from "../../types/item";
+import { ItemID } from "../../types/item";
 import { EventID } from "../../types/event";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
 
@@ -22,8 +22,8 @@ const titles = {
 
 export default function ItemsCollection() {
   const theme = useTheme();
-  const { items, addItem, deleteItems } = useContext(ItemsContext);
-  const { attachItems } = useContext(EventsContext);
+  const { items, addItems, deleteItems } = useContext(ItemsContext);
+  const { attachItems, loadEvents } = useContext(EventsContext);
 
   const [selectedIds, setSelectedIds] = useState<Set<ItemID>>(new Set());
 
@@ -69,18 +69,29 @@ export default function ItemsCollection() {
   };
 
   const onAddItem = async (title: string) => {
-    await addItem(title);
+    const lines = title
+      .split(/\r?\n/)
+      .map((string) => string.trim())
+      .filter((string) => string.length > 0);
+
+    if (lines.length === 0) return;
+
+    await addItems(lines);
   };
 
   const onDeleteItems = async () => {
     const selestedItemIds = Array.from(selectedIds);
     await deleteItems(selestedItemIds);
+    await loadEvents();
+    if (selestedItemIds.length === items.length) {
+      setIsEditMode(false);
+    }
     clearSelection();
   };
 
-  const onAddItemsToEvents = async (selecyedEventIds: EventID[]) => {
+  const onAddItemsToEvents = async (selectedEventIds: EventID[]) => {
     const selestedItemIds = Array.from(selectedIds);
-    await attachItems(selestedItemIds, selecyedEventIds);
+    await attachItems(selestedItemIds, selectedEventIds);
   };
 
   const onEditItems = useCallback(() => {
@@ -96,9 +107,6 @@ export default function ItemsCollection() {
     <MainScreen>
       <Appbar.Header mode="center-aligned">
         <Appbar.Content title={isEditMode ? titles.editMode : titles.storage} />
-        {isEditMode && (
-          <Appbar.Action icon="close" onPress={onCloseEditItems} />
-        )}
       </Appbar.Header>
 
       <FlatList
@@ -115,7 +123,9 @@ export default function ItemsCollection() {
             />
           </View>
         )}
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 12 }}
+        ListFooterComponent={<View style={{ height: 180 }} />}
       />
 
       {isEditMode ? (
@@ -160,6 +170,7 @@ export default function ItemsCollection() {
         visible={showAddItemModal}
         onDismiss={hideAddItemModal}
         onSubmit={onAddItem}
+        multiline
       />
       <DeleteModal
         title="Are you sure you want to delete selected Items?"

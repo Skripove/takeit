@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import {
   useTheme,

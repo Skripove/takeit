@@ -5,6 +5,7 @@ import { ItemID } from "../types/item";
 
 type EventsCtx = {
   events: EventType[];
+  loadEvents: () => Promise<void>;
   getAllEvents: () => Promise<EventType[]>;
   seeAllEvents: () => Promise<StorageEventType[]>;
   addEvent: (title: string) => Promise<EventType>;
@@ -16,6 +17,7 @@ type EventsCtx = {
 
 export const EventsContext = createContext<EventsCtx>({
   events: [],
+  loadEvents: async () => undefined,
   getAllEvents: async () => [],
   seeAllEvents: async () => [],
   addEvent: async () => ({}) as EventType,
@@ -44,13 +46,28 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
     (async () => {
       try {
         console.log("Fetching Events - provider...");
-        const allEvents = await getAllEvents();
-        setEvents(allEvents);
+        await loadEvents();
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [getAllEvents]);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const map = new Map();
+      const allEvents = await seeAllEvents();
+      allEvents.forEach((ev) => {
+        map.set(ev.title, ev.items);
+      });
+      console.log(map); //TODO REMOVE
+    })();
+  }, [seeAllEvents, events]);
+
+  const loadEvents = useCallback(async () => {
+    const allEvents = await getAllEvents();
+    setEvents(allEvents);
+  }, []);
 
   const addEventHandler = useCallback(async (title: string) => {
     const newEvent = await addEvent(title);
@@ -60,29 +77,37 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   const deleteEventsHandler = useCallback(async (eventIds: EventID[]) => {
     await removeEvents(eventIds);
-    setEvents((prev) =>
-      prev.filter((prevEvent) => !eventIds.includes(prevEvent.id))
-    );
+    await loadEvents();
   }, []);
+
+  const attachItemsHandler = useCallback(
+    async (itemIds: ItemID[], eventIds: EventID[]) => {
+      await attachItems(itemIds, eventIds);
+      await loadEvents();
+    },
+    []
+  );
 
   const value = React.useMemo<EventsCtx>(
     () => ({
       events,
+      loadEvents,
       getAllEvents,
       seeAllEvents,
       addEvent: addEventHandler,
       deleteEvents: deleteEventsHandler,
-      attachItems,
+      attachItems: attachItemsHandler,
       detachItems,
       clearEvents,
     }),
     [
       events,
+      loadEvents,
       getAllEvents,
       seeAllEvents,
       addEventHandler,
       deleteEventsHandler,
-      attachItems,
+      attachItemsHandler,
       detachItems,
       clearEvents,
     ]

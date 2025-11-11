@@ -1,10 +1,10 @@
 import { View, FlatList } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import MainScreen from "../MainScreen";
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { AddModal, DeleteModal, Event, FloatingButton } from "../../components";
 import { EventsContext } from "../../provider";
-import { EventID, EventType } from "../../types/event";
+import { EventID } from "../../types/event";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -35,7 +35,7 @@ export default function EventsCollection() {
 
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
-  const onLongPressEvent = useCallback(() => {
+  const onEditEvents = useCallback(() => {
     setIsEditMode(true);
   }, []);
 
@@ -65,19 +65,15 @@ export default function EventsCollection() {
     clearSelection();
   };
 
+  const onCloseEditEvents = useCallback(() => {
+    setIsEditMode(false);
+    clearSelection();
+  }, []);
+
   return (
     <MainScreen>
       <Appbar.Header mode="center-aligned">
         <Appbar.Content title="Events" />
-        {isEditMode && (
-          <Appbar.Action
-            icon="close"
-            onPress={() => {
-              setIsEditMode(false);
-              clearSelection();
-            }}
-          />
-        )}
       </Appbar.Header>
 
       <FlatList
@@ -88,7 +84,7 @@ export default function EventsCollection() {
             <Event
               event={event}
               onPressWithCheckbox={toggleSelect}
-              onLongPress={onLongPressEvent}
+              onLongPress={onEditEvents}
               withCheckBox={isEditMode}
               selected={selectedIds.has(event.id)}
             />
@@ -104,18 +100,30 @@ export default function EventsCollection() {
             onPress={handleShowDeleteModal}
             icon="delete-outline"
             disabled={!Boolean(selectedIds.size)}
-            position={FABPosition.fabBottomRight}
+            position={FABPosition.fabBottomRightSecond}
             style={{ backgroundColor: theme.colors.errorContainer }}
             color={theme.colors.onErrorContainer}
           />
+          <FloatingButton
+            onPress={onCloseEditEvents}
+            icon="close"
+            position={FABPosition.fabBottomRight}
+          />
         </View>
       ) : (
-        <FloatingButton
-          onPress={handleShowAddEventModal}
-          icon="plus"
-          label="Create new Event"
-          disabled={isEditMode}
-        />
+        <View>
+          <FloatingButton
+            onPress={handleShowAddEventModal}
+            icon="plus"
+            label="Create new Event"
+            disabled={isEditMode}
+          />
+          <FloatingButton
+            onPress={onEditEvents}
+            icon="clipboard-edit-outline"
+            position={FABPosition.fabBottomRight}
+          />
+        </View>
       )}
 
       <AddModal

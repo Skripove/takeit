@@ -30,20 +30,24 @@ export default function Navigation() {
         }}
       >
         <Tab.Screen
-          name="EventsCollection"
+          name="Events"
           component={EventsCollection}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="apps" color={color} size={size} />
+              <MaterialIcons name="calendar-today" color={color} size={size} />
             ),
           }}
         />
         <Tab.Screen
-          name="ItemsCollection"
+          name="Items"
           component={ItemsCollection}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="storage" color={color} size={size} />
+              <MaterialIcons
+                name="format-list-bulleted"
+                color={color}
+                size={size}
+              />
             ),
           }}
         />

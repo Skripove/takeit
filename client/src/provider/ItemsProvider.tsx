@@ -6,7 +6,7 @@ type ItemsCtx = {
   items: ItemType[];
   getAllItems: () => Promise<ItemType[]>;
   seeAllItems: () => Promise<StorageItemType[]>;
-  addItem: (text: string) => Promise<ItemType>;
+  addItems: (itemTitles: string[]) => Promise<void>;
   deleteItems: (itemIds: ItemID[]) => Promise<void>;
   clearItems: () => Promise<void>;
 };
@@ -15,7 +15,7 @@ export const ItemsContext = createContext<ItemsCtx>({
   items: [],
   getAllItems: async () => [],
   seeAllItems: async () => [],
-  addItem: async () => ({}) as ItemType,
+  addItems: async () => undefined,
   deleteItems: async () => undefined,
   clearItems: async () => {},
 });
@@ -23,7 +23,7 @@ export const ItemsContext = createContext<ItemsCtx>({
 export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const { getAllItems, seeAllItems, addItem, removeItems, clearItems } =
+  const { getAllItems, seeAllItems, addItems, removeItems, clearItems } =
     useTakeItStorage();
 
   const [items, setItems] = useState<ItemType[]>([]);
@@ -32,25 +32,26 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
     (async () => {
       try {
         console.log("Fetching Items - provider...");
-        const allItems = await getAllItems();
-        setItems(allItems);
+        await loadItems();
       } catch (e) {
         console.error(e);
       }
     })();
-  }, [getAllItems]);
+  }, []);
 
-  const addItemHandler = useCallback(async (title: string) => {
-    const newItem = await addItem(title);
-    setItems((prev) => [...prev, newItem]);
-    return newItem;
+  const loadItems = async () => {
+    const allItems = await getAllItems();
+    setItems(allItems);
+  };
+
+  const addItemsHandler = useCallback(async (itemTitles: string[]) => {
+    await addItems(itemTitles);
+    await loadItems();
   }, []);
 
   const deleteItemsHandler = useCallback(async (itemIds: ItemID[]) => {
     await removeItems(itemIds);
-    setItems((prev) =>
-      prev.filter((prevItem) => !itemIds.includes(prevItem.id))
-    );
+    await loadItems();
   }, []);
 
   const value = React.useMemo<ItemsCtx>(
@@ -58,7 +59,7 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
       items,
       getAllItems,
       seeAllItems,
-      addItem: addItemHandler,
+      addItems: addItemsHandler,
       deleteItems: deleteItemsHandler,
       clearItems,
     }),
@@ -66,7 +67,7 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
       items,
       getAllItems,
       seeAllItems,
-      addItemHandler,
+      addItemsHandler,
       deleteItemsHandler,
       clearItems,
     ]

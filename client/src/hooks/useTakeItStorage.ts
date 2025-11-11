@@ -18,7 +18,7 @@ type Storage = {
   seeAllItems: () => Promise<StorageItemType[]>;
   seeAllEvents: () => Promise<StorageEventType[]>;
   // Items
-  addItem: (text: string) => Promise<ItemType>;
+  addItems: (itemTitles: string[]) => Promise<void>;
   removeItems: (itemIds: ItemID[]) => Promise<void>;
   // Events
   addEvent: (title: string) => Promise<EventType>;
@@ -71,18 +71,19 @@ export const useTakeItStorage = (): Storage => {
   }, []);
 
   // Items
-  const addItem = useCallback(async (text: string) => {
+  const addItems = useCallback(async (itemTitles: string[]) => {
     const storageItems = await getAllItems();
-    const newStorageItem: StorageItemType = {
-      id: uid(),
-      text,
-      events: [],
-      creationDate: now(),
-    };
-    storageItems.push(newStorageItem);
+    itemTitles.forEach((title) => {
+      const newStorageItem: StorageItemType = {
+        id: uid(),
+        text: title,
+        events: [],
+        creationDate: now(),
+      };
+      storageItems.push(newStorageItem);
+    });
+
     await AsyncStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify(storageItems));
-    const { events, ...rest } = newStorageItem;
-    return rest as ItemType;
   }, []);
 
   const removeItems = useCallback(async (itemIds: ItemID[]) => {
@@ -92,7 +93,6 @@ export const useTakeItStorage = (): Storage => {
 
     const stEvents = JSON.parse(rawEvents) as StorageEventType[];
     const stItems = JSON.parse(rawItems) as StorageItemType[];
-    console.log(stEvents);
 
     const updatedStEvents = stEvents.map((stEvent) => {
       const updatedItems = stEvent.items.filter(
@@ -214,7 +214,7 @@ export const useTakeItStorage = (): Storage => {
     getAllEvents,
     seeAllItems,
     seeAllEvents,
-    addItem,
+    addItems,
     removeItems,
     addEvent,
     removeEvents,

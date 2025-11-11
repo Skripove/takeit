@@ -25,7 +25,13 @@ function Item({ item, onPress, onLongPress, withCheckBox, selected }: Props) {
 
   return (
     <Card
-      style={{ marginVertical: 4, elevation: 0, shadowColor: "transparent" }}
+      mode={"outlined"}
+      style={{
+        marginVertical: 4,
+        // backgroundColor: theme.colors.surface,
+        // borderWidth: 1,
+        // borderColor: theme.colors.tertiary,
+      }}
       onPress={onPressHandler}
       onLongPress={onLongPressHandler}
     >
