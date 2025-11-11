@@ -147,7 +147,6 @@ const AddModal: React.FC<AddModalProps> = ({
 
               <TextInput
                 mode="outlined"
-                label="Title"
                 value={text}
                 onChangeText={setText}
                 autoFocus

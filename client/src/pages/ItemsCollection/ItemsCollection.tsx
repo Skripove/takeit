@@ -16,8 +16,8 @@ import { EventID } from "../../types/event";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
 
 const titles = {
-  storage: "Storage",
-  editMode: "Storage (edit mode)",
+  items: "Items",
+  itemsEditMode: "Items (edit mode)",
 };
 
 export default function ItemsCollection() {
@@ -68,8 +68,8 @@ export default function ItemsCollection() {
     setShowAddItemsToEventsModal(false);
   };
 
-  const onAddItem = async (title: string) => {
-    const lines = title
+  const onAddItems = async (text: string) => {
+    const lines = text
       .split(/\r?\n/)
       .map((string) => string.trim())
       .filter((string) => string.length > 0);
@@ -106,7 +106,9 @@ export default function ItemsCollection() {
   return (
     <MainScreen>
       <Appbar.Header mode="center-aligned">
-        <Appbar.Content title={isEditMode ? titles.editMode : titles.storage} />
+        <Appbar.Content
+          title={isEditMode ? titles.itemsEditMode : titles.items}
+        />
       </Appbar.Header>
 
       <FlatList
@@ -161,15 +163,16 @@ export default function ItemsCollection() {
             onPress={onEditItems}
             icon="clipboard-edit-outline"
             position={FABPosition.fabBottomRight}
+            disabled={!items.length}
           />
         </View>
       )}
 
       <AddModal
-        title="Add Item:"
+        title="Add Items:"
         visible={showAddItemModal}
         onDismiss={hideAddItemModal}
-        onSubmit={onAddItem}
+        onSubmit={onAddItems}
         multiline
       />
       <DeleteModal

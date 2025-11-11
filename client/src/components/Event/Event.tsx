@@ -31,12 +31,13 @@ function Event({
 
   return (
     <Card
+      mode={"outlined"}
       style={{
         marginVertical: 4,
         elevation: 0,
         shadowColor: "transparent",
-        height: 92,
         justifyContent: "center",
+        // backgroundColor: theme.colors.surface,
       }}
       onPress={onPressHandler}
       onLongPress={onLongPressHandler}

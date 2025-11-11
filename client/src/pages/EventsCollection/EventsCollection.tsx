@@ -9,6 +9,11 @@ import { FABPosition } from "../../components/Buttons/FloatingButton";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const titles = {
+  events: "Events",
+  eventsEditMode: "Events (edit mode)",
+};
+
 const FAB_HEIGHT = 56;
 const GAP = 16;
 
@@ -73,7 +78,9 @@ export default function EventsCollection() {
   return (
     <MainScreen>
       <Appbar.Header mode="center-aligned">
-        <Appbar.Content title="Events" />
+        <Appbar.Content
+          title={isEditMode ? titles.eventsEditMode : titles.events}
+        />
       </Appbar.Header>
 
       <FlatList
@@ -122,6 +129,7 @@ export default function EventsCollection() {
             onPress={onEditEvents}
             icon="clipboard-edit-outline"
             position={FABPosition.fabBottomRight}
+            disabled={!events.length}
           />
         </View>
       )}

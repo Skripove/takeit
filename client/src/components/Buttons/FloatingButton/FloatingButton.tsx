@@ -17,7 +17,14 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   style,
   ...props
 }) => {
-  return <FAB style={[styles[position], style]} {...props} />;
+  return (
+    <FAB
+      style={[styles[position], style]}
+      animated={false}
+      mode={"flat"}
+      {...props}
+    />
+  );
 };
 
 export default FloatingButton;

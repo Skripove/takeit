@@ -48,7 +48,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
         contentContainerStyle={[
           styles.card,
           {
-            marginHorizontal: 16,
+            backgroundColor: theme.colors.surface,
           },
         ]}
         {...props}
@@ -83,8 +83,8 @@ export default DeleteModal;
 // Styles
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white",
     padding: 20,
+    marginHorizontal: 16,
     borderRadius: 16,
   },
 });
