@@ -8,16 +8,17 @@ import { EventID } from "../../types/event";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { EventsStackParamList } from "../../types/navigation";
 
 const titles = {
   events: "Events",
   eventsEditMode: "Events (edit mode)",
 };
 
-const FAB_HEIGHT = 56;
-const GAP = 16;
+type Props = NativeStackScreenProps<EventsStackParamList, "EventsCollection">;
 
-export default function EventsCollection() {
+export default function EventsCollection({ navigation }: Props) {
   const theme = useTheme();
   const { events, addEvent, deleteEvents } = useContext(EventsContext);
 
@@ -28,7 +29,7 @@ export default function EventsCollection() {
 
   const insets = useSafeAreaInsets();
   const tabBar = useBottomTabBarHeight?.() ?? 0;
-  const bottomSpacer = insets.bottom + tabBar + FAB_HEIGHT + GAP;
+  const bottomSpacer = insets.bottom + tabBar + 72;
 
   const toggleSelect = useCallback((eventId: EventID) => {
     setSelectedIds((prev) => {
@@ -75,6 +76,14 @@ export default function EventsCollection() {
     clearSelection();
   }, []);
 
+  const handleOpenEvent = useCallback(
+    (eventId: EventID) => {
+      if (isEditMode) return;
+      navigation.navigate("Event", { eventId });
+    },
+    [navigation, isEditMode]
+  );
+
   return (
     <MainScreen>
       <Appbar.Header mode="center-aligned">
@@ -94,6 +103,7 @@ export default function EventsCollection() {
               onLongPress={onEditEvents}
               withCheckBox={isEditMode}
               selected={selectedIds.has(event.id)}
+              onPress={handleOpenEvent}
             />
           </View>
         )}

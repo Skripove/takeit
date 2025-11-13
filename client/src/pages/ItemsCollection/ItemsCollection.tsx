@@ -14,6 +14,8 @@ import { EventsContext, ItemsContext } from "../../provider";
 import { ItemID } from "../../types/item";
 import { EventID } from "../../types/event";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 const titles = {
   items: "Items",
@@ -24,6 +26,10 @@ export default function ItemsCollection() {
   const theme = useTheme();
   const { items, addItems, deleteItems } = useContext(ItemsContext);
   const { attachItems, loadEvents } = useContext(EventsContext);
+
+  const insets = useSafeAreaInsets();
+  const tabBar = useBottomTabBarHeight?.() ?? 0;
+  const bottomSpacer = insets.bottom + tabBar + 72;
 
   const [selectedIds, setSelectedIds] = useState<Set<ItemID>>(new Set());
 
@@ -127,7 +133,7 @@ export default function ItemsCollection() {
         )}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 12 }}
-        ListFooterComponent={<View style={{ height: 180 }} />}
+        ListFooterComponent={<View style={{ height: bottomSpacer }} />}
       />
 
       {isEditMode ? (

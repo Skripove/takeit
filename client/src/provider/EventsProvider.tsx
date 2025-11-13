@@ -7,6 +7,7 @@ type EventsCtx = {
   events: EventType[];
   loadEvents: () => Promise<void>;
   getAllEvents: () => Promise<EventType[]>;
+  getEvents: (eventIds: EventID[]) => Promise<StorageEventType[]>;
   seeAllEvents: () => Promise<StorageEventType[]>;
   addEvent: (title: string) => Promise<EventType>;
   deleteEvents: (eventIds: EventID[]) => Promise<void>;
@@ -19,6 +20,7 @@ export const EventsContext = createContext<EventsCtx>({
   events: [],
   loadEvents: async () => undefined,
   getAllEvents: async () => [],
+  getEvents: async () => [],
   seeAllEvents: async () => [],
   addEvent: async () => ({}) as EventType,
   deleteEvents: async () => undefined,
@@ -75,6 +77,16 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
     return newEvent;
   }, []);
 
+  const getEventsByIds = useCallback(
+    async (eventIds: EventID[]) => {
+      if (!eventIds.length) return [];
+      const allEvents = await seeAllEvents();
+      const ids = new Set(eventIds);
+      return allEvents.filter((event) => ids.has(event.id));
+    },
+    [seeAllEvents]
+  );
+
   const deleteEventsHandler = useCallback(async (eventIds: EventID[]) => {
     await removeEvents(eventIds);
     await loadEvents();
@@ -93,6 +105,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       events,
       loadEvents,
       getAllEvents,
+      getEvents: getEventsByIds,
       seeAllEvents,
       addEvent: addEventHandler,
       deleteEvents: deleteEventsHandler,
@@ -104,6 +117,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       events,
       loadEvents,
       getAllEvents,
+      getEventsByIds,
       seeAllEvents,
       addEventHandler,
       deleteEventsHandler,

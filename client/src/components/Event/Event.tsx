@@ -7,6 +7,7 @@ type Props = {
   event: EventType;
   onPressWithCheckbox: (eventId: EventID) => void;
   onLongPress?: (eventId: EventID) => void;
+  onPress?: (eventId: EventID) => void;
   withCheckBox?: boolean;
   selected?: boolean;
 };
@@ -15,14 +16,18 @@ function Event({
   event,
   onPressWithCheckbox,
   onLongPress,
+  onPress,
   withCheckBox,
   selected,
 }: Props) {
   const theme = useTheme();
 
   const onPressHandler = () => {
-    if (!withCheckBox) return;
-    onPressWithCheckbox(event.id);
+    if (withCheckBox) {
+      onPressWithCheckbox(event.id);
+      return;
+    }
+    onPress?.(event.id);
   };
 
   const onLongPressHandler = () => {
