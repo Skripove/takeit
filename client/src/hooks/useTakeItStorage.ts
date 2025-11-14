@@ -4,19 +4,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Crypto from "expo-crypto";
 import { useCallback } from "react";
 
-export type StorageItemType = ItemType & {
-  events: EventID[];
-};
-
-export type StorageEventType = EventType & {
-  items: ItemID[];
-};
-
 type Storage = {
   getAllItems: () => Promise<ItemType[]>;
   getAllEvents: () => Promise<EventType[]>;
-  seeAllItems: () => Promise<StorageItemType[]>;
-  seeAllEvents: () => Promise<StorageEventType[]>;
   // Items
   addItems: (itemTitles: string[]) => Promise<void>;
   removeItems: (itemIds: ItemID[]) => Promise<void>;
@@ -41,58 +31,45 @@ export const useTakeItStorage = (): Storage => {
   const getAllItems = useCallback(async () => {
     const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
     if (!raw) return [];
-    const storageItems = JSON.parse(raw) as StorageItemType[];
-    const items: ItemType[] = storageItems.map(({ events, ...rest }) => ({
-      ...rest,
-    }));
+    const items = JSON.parse(raw) as ItemType[];
     return items;
   }, []);
 
   const getAllEvents = useCallback(async () => {
     const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
     if (!raw) return [];
-    const storageEvents = JSON.parse(raw) as StorageEventType[];
-    const events: EventType[] = storageEvents.map(({ items, ...rest }) => rest);
+    const events = JSON.parse(raw) as EventType[];
     return events;
   }, []);
 
-  const seeAllItems = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
-    if (!raw) return [];
-    const storageItems = JSON.parse(raw) as StorageItemType[];
-    return storageItems;
-  }, []);
-
-  const seeAllEvents = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!raw) return [];
-    const storageEvents = JSON.parse(raw) as StorageEventType[];
-    return storageEvents;
-  }, []);
-
   // Items
-  const addItems = useCallback(async (itemTitles: string[]) => {
-    const storageItems = await getAllItems();
-    itemTitles.forEach((title) => {
-      const newStorageItem: StorageItemType = {
-        id: uid(),
-        text: title,
-        events: [],
-        creationDate: now(),
-      };
-      storageItems.push(newStorageItem);
-    });
+  const addItems = useCallback(
+    async (itemTitles: string[]) => {
+      const storageItems = await getAllItems();
+      itemTitles.forEach((title) => {
+        const newStorageItem: ItemType = {
+          id: uid(),
+          text: title,
+          creationDate: now(),
+        };
+        storageItems.push(newStorageItem);
+      });
 
-    await AsyncStorage.setItem(ITEMS_STORAGE_KEY, JSON.stringify(storageItems));
-  }, []);
+      await AsyncStorage.setItem(
+        ITEMS_STORAGE_KEY,
+        JSON.stringify(storageItems)
+      );
+    },
+    [getAllItems]
+  );
 
   const removeItems = useCallback(async (itemIds: ItemID[]) => {
     const rawEvents = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
     const rawItems = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
     if (!rawEvents || !rawItems) return;
 
-    const stEvents = JSON.parse(rawEvents) as StorageEventType[];
-    const stItems = JSON.parse(rawItems) as StorageItemType[];
+    const stEvents = JSON.parse(rawEvents) as EventType[];
+    const stItems = JSON.parse(rawItems) as ItemType[];
 
     const updatedStEvents = stEvents.map((stEvent) => {
       const updatedItems = stEvent.items.filter(
@@ -120,8 +97,8 @@ export const useTakeItStorage = (): Storage => {
   const addEvent = useCallback(async (title: string) => {
     const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
     if (!raw) throw new Error("Can't get storage events");
-    const storageEvents = JSON.parse(raw) as StorageEventType[];
-    const newStorageEvent: StorageEventType = {
+    const storageEvents = JSON.parse(raw) as EventType[];
+    const newStorageEvent: EventType = {
       id: uid(),
       title,
       items: [],
@@ -139,7 +116,7 @@ export const useTakeItStorage = (): Storage => {
   const removeEvents = useCallback(async (eventIds: EventID[]) => {
     const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
     if (!raw) return;
-    const storageEvents = JSON.parse(raw) as StorageEventType[];
+    const storageEvents = JSON.parse(raw) as EventType[];
     const filteredStorageEvents = storageEvents.filter(
       (storageEvent) => !eventIds.includes(storageEvent.id)
     );
@@ -154,7 +131,7 @@ export const useTakeItStorage = (): Storage => {
     async (itemIds: ItemID[], eventIds: EventID[]) => {
       const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
       if (!raw) return;
-      const storageEvents = JSON.parse(raw) as StorageEventType[];
+      const storageEvents = JSON.parse(raw) as EventType[];
 
       const updatedEvents = storageEvents.map((storageEvent) => {
         if (!eventIds.includes(storageEvent.id)) return storageEvent;
@@ -179,7 +156,7 @@ export const useTakeItStorage = (): Storage => {
     async (itemIds: ItemID[], eventId: EventID) => {
       const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
       if (!raw) return;
-      const storageEvents = JSON.parse(raw) as StorageEventType[];
+      const storageEvents = JSON.parse(raw) as EventType[];
 
       const event = storageEvents.find(
         (storageEvent) => storageEvent.id === eventId
@@ -212,8 +189,6 @@ export const useTakeItStorage = (): Storage => {
   return {
     getAllItems,
     getAllEvents,
-    seeAllItems,
-    seeAllEvents,
     addItems,
     removeItems,
     addEvent,

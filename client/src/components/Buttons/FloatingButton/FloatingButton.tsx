@@ -19,7 +19,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
 }) => {
   return (
     <FAB
-      style={[styles[position], style]}
+      style={[{ opacity: 0.9 }, styles[position], style]}
       animated={false}
       mode={"flat"}
       {...props}

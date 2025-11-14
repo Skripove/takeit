@@ -107,7 +107,7 @@ export default function ItemsCollection() {
   const onCloseEditItems = useCallback(() => {
     setIsEditMode(false);
     clearSelection();
-  }, []);
+  }, [clearSelection]);
 
   return (
     <MainScreen>

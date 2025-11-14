@@ -1,12 +1,11 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { ItemID, ItemType } from "../types/item";
-import { StorageItemType, useTakeItStorage } from "../hooks/useTakeItStorage";
+import { useTakeItStorage } from "../hooks/useTakeItStorage";
 
 type ItemsCtx = {
   items: ItemType[];
   getAllItems: () => Promise<ItemType[]>;
-  getItems: (itemIds: ItemID[]) => Promise<StorageItemType[]>;
-  seeAllItems: () => Promise<StorageItemType[]>;
+  getItems: (itemIds: ItemID[]) => Promise<ItemType[]>;
   addItems: (itemTitles: string[]) => Promise<void>;
   deleteItems: (itemIds: ItemID[]) => Promise<void>;
   clearItems: () => Promise<void>;
@@ -16,7 +15,6 @@ export const ItemsContext = createContext<ItemsCtx>({
   items: [],
   getAllItems: async () => [],
   getItems: async () => [],
-  seeAllItems: async () => [],
   addItems: async () => undefined,
   deleteItems: async () => undefined,
   clearItems: async () => {},
@@ -25,10 +23,14 @@ export const ItemsContext = createContext<ItemsCtx>({
 export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const { getAllItems, seeAllItems, addItems, removeItems, clearItems } =
-    useTakeItStorage();
+  const { getAllItems, addItems, removeItems, clearItems } = useTakeItStorage();
 
   const [items, setItems] = useState<ItemType[]>([]);
+
+  const loadItems = useCallback(async () => {
+    const allItems = await getAllItems();
+    setItems(allItems);
+  }, [getAllItems]);
 
   useEffect(() => {
     (async () => {
@@ -39,39 +41,39 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
         console.error(e);
       }
     })();
-  }, []);
+  }, [loadItems]);
 
-  const loadItems = async () => {
-    const allItems = await getAllItems();
-    setItems(allItems);
-  };
-
-  const addItemsHandler = useCallback(async (itemTitles: string[]) => {
-    await addItems(itemTitles);
-    await loadItems();
-  }, []);
+  const addItemsHandler = useCallback(
+    async (itemTitles: string[]) => {
+      await addItems(itemTitles);
+      await loadItems();
+    },
+    [addItems, loadItems]
+  );
 
   const getItemsByIds = useCallback(
     async (itemIds: ItemID[]) => {
       if (!itemIds.length) return [];
-      const allItems = await seeAllItems();
+      const allItems = await getAllItems();
       const ids = new Set(itemIds);
       return allItems.filter((item) => ids.has(item.id));
     },
-    [seeAllItems]
+    [getAllItems]
   );
 
-  const deleteItemsHandler = useCallback(async (itemIds: ItemID[]) => {
-    await removeItems(itemIds);
-    await loadItems();
-  }, []);
+  const deleteItemsHandler = useCallback(
+    async (itemIds: ItemID[]) => {
+      await removeItems(itemIds);
+      await loadItems();
+    },
+    [removeItems, loadItems]
+  );
 
   const value = React.useMemo<ItemsCtx>(
     () => ({
       items,
       getAllItems,
       getItems: getItemsByIds,
-      seeAllItems,
       addItems: addItemsHandler,
       deleteItems: deleteItemsHandler,
       clearItems,
@@ -80,7 +82,6 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
       items,
       getAllItems,
       getItemsByIds,
-      seeAllItems,
       addItemsHandler,
       deleteItemsHandler,
       clearItems,

@@ -7,15 +7,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Item } from "../../components";
 import { EventsContext, ItemsContext } from "../../provider";
-import { StorageItemType } from "../../hooks/useTakeItStorage";
 import { ItemID, ItemType } from "../../types/item";
 import { EventsStackParamList } from "../../types/navigation";
 import MainScreen from "../MainScreen";
 
 type Props = NativeStackScreenProps<EventsStackParamList, "Event">;
 
-const itemMapper = ({ events: _events, ...rest }: StorageItemType): ItemType =>
-  rest;
 const noop: (itemId: ItemID) => void = () => {};
 
 export default function EventScreen({ navigation, route }: Props) {
@@ -56,9 +53,7 @@ export default function EventScreen({ navigation, route }: Props) {
       }
 
       const storageItems = await getItems(currentEvent.items);
-      const filteredItems = storageItems.map(itemMapper);
-
-      setItems(filteredItems);
+      setItems(storageItems);
     } catch (error) {
       console.error(error);
     } finally {

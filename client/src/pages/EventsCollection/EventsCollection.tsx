@@ -1,10 +1,11 @@
-import { View, FlatList } from "react-native";
+import { View, FlatList, StyleSheet } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import MainScreen from "../MainScreen";
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { AddModal, DeleteModal, Event, FloatingButton } from "../../components";
-import { EventsContext } from "../../provider";
-import { EventID } from "../../types/event";
+import { EventsContext, ItemsContext } from "../../provider";
+import { EventID, EventType } from "../../types/event";
+import { ItemType } from "../../types/item";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +22,7 @@ type Props = NativeStackScreenProps<EventsStackParamList, "EventsCollection">;
 export default function EventsCollection({ navigation }: Props) {
   const theme = useTheme();
   const { events, addEvent, deleteEvents } = useContext(EventsContext);
+  const { items } = useContext(ItemsContext);
 
   const [selectedIds, setSelectedIds] = useState<Set<EventID>>(new Set());
   const [isEditMode, setIsEditMode] = useState(false);
@@ -30,6 +32,7 @@ export default function EventsCollection({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   const tabBar = useBottomTabBarHeight?.() ?? 0;
   const bottomSpacer = insets.bottom + tabBar + 72;
+  const numColumns = 2;
 
   const toggleSelect = useCallback((eventId: EventID) => {
     setSelectedIds((prev) => {
@@ -74,7 +77,7 @@ export default function EventsCollection({ navigation }: Props) {
   const onCloseEditEvents = useCallback(() => {
     setIsEditMode(false);
     clearSelection();
-  }, []);
+  }, [clearSelection]);
 
   const handleOpenEvent = useCallback(
     (eventId: EventID) => {
@@ -82,6 +85,20 @@ export default function EventsCollection({ navigation }: Props) {
       navigation.navigate("Event", { eventId });
     },
     [navigation, isEditMode]
+  );
+
+  const itemsById = useMemo(() => {
+    const map = new Map(items.map((item) => [item.id, item]));
+    return map;
+  }, [items]);
+
+  const getItemsForEvent = useCallback(
+    (event: EventType) => {
+      return event.items
+        .map((itemId) => itemsById.get(itemId))
+        .filter((item): item is ItemType => Boolean(item));
+    },
+    [itemsById]
   );
 
   return (
@@ -93,19 +110,22 @@ export default function EventsCollection({ navigation }: Props) {
       </Appbar.Header>
 
       <FlatList
+        key={`columns-${numColumns}`}
         data={events}
         keyExtractor={(event) => String(event.id)}
+        numColumns={numColumns}
+        columnWrapperStyle={styles.row}
         renderItem={({ item: event }) => (
-          <View>
-            <Event
-              event={event}
-              onPressWithCheckbox={toggleSelect}
-              onLongPress={onEditEvents}
-              withCheckBox={isEditMode}
-              selected={selectedIds.has(event.id)}
-              onPress={handleOpenEvent}
-            />
-          </View>
+          <Event
+            event={event}
+            items={getItemsForEvent(event)}
+            onPressWithCheckbox={toggleSelect}
+            onLongPress={onEditEvents}
+            withCheckBox={isEditMode}
+            selected={selectedIds.has(event.id)}
+            onPress={handleOpenEvent}
+            style={styles.eventCard}
+          />
         )}
         ListFooterComponent={<View style={{ height: bottomSpacer }} />}
         contentContainerStyle={{ padding: 12 }}
@@ -159,3 +179,13 @@ export default function EventsCollection({ navigation }: Props) {
     </MainScreen>
   );
 }
+
+const styles = StyleSheet.create({
+  row: {
+    justifyContent: "space-between",
+  },
+  eventCard: {
+    flex: 0.49,
+    aspectRatio: 1,
+  },
+});

@@ -1,14 +1,13 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { EventID, EventType } from "../types/event";
-import { StorageEventType, useTakeItStorage } from "../hooks/useTakeItStorage";
+import { useTakeItStorage } from "../hooks/useTakeItStorage";
 import { ItemID } from "../types/item";
 
 type EventsCtx = {
   events: EventType[];
   loadEvents: () => Promise<void>;
   getAllEvents: () => Promise<EventType[]>;
-  getEvents: (eventIds: EventID[]) => Promise<StorageEventType[]>;
-  seeAllEvents: () => Promise<StorageEventType[]>;
+  getEvents: (eventIds: EventID[]) => Promise<EventType[]>;
   addEvent: (title: string) => Promise<EventType>;
   deleteEvents: (eventIds: EventID[]) => Promise<void>;
   clearEvents: () => Promise<void>;
@@ -21,7 +20,6 @@ export const EventsContext = createContext<EventsCtx>({
   loadEvents: async () => undefined,
   getAllEvents: async () => [],
   getEvents: async () => [],
-  seeAllEvents: async () => [],
   addEvent: async () => ({}) as EventType,
   deleteEvents: async () => undefined,
   attachItems: async () => {},
@@ -34,7 +32,6 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
 }) => {
   const {
     getAllEvents,
-    seeAllEvents,
     addEvent,
     removeEvents,
     clearEvents,
@@ -43,6 +40,11 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
   } = useTakeItStorage();
 
   const [events, setEvents] = useState<EventType[]>([]);
+
+  const loadEvents = useCallback(async () => {
+    const allEvents = await getAllEvents();
+    setEvents(allEvents);
+  }, [getAllEvents]);
 
   useEffect(() => {
     (async () => {
@@ -53,51 +55,52 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
         console.error(e);
       }
     })();
-  }, []);
+  }, [loadEvents]);
 
   useEffect(() => {
     (async () => {
       const map = new Map();
-      const allEvents = await seeAllEvents();
+      const allEvents = await getAllEvents();
       allEvents.forEach((ev) => {
         map.set(ev.title, ev.items);
       });
       console.log(map); //TODO REMOVE
     })();
-  }, [seeAllEvents, events]);
+  }, [getAllEvents, events]);
 
-  const loadEvents = useCallback(async () => {
-    const allEvents = await getAllEvents();
-    setEvents(allEvents);
-  }, []);
-
-  const addEventHandler = useCallback(async (title: string) => {
-    const newEvent = await addEvent(title);
-    setEvents((prev) => [...prev, newEvent]);
-    return newEvent;
-  }, []);
+  const addEventHandler = useCallback(
+    async (title: string) => {
+      const newEvent = await addEvent(title);
+      setEvents((prev) => [...prev, newEvent]);
+      return newEvent;
+    },
+    [addEvent]
+  );
 
   const getEventsByIds = useCallback(
     async (eventIds: EventID[]) => {
       if (!eventIds.length) return [];
-      const allEvents = await seeAllEvents();
+      const allEvents = await getAllEvents();
       const ids = new Set(eventIds);
       return allEvents.filter((event) => ids.has(event.id));
     },
-    [seeAllEvents]
+    [getAllEvents]
   );
 
-  const deleteEventsHandler = useCallback(async (eventIds: EventID[]) => {
-    await removeEvents(eventIds);
-    await loadEvents();
-  }, []);
+  const deleteEventsHandler = useCallback(
+    async (eventIds: EventID[]) => {
+      await removeEvents(eventIds);
+      await loadEvents();
+    },
+    [loadEvents, removeEvents]
+  );
 
   const attachItemsHandler = useCallback(
     async (itemIds: ItemID[], eventIds: EventID[]) => {
       await attachItems(itemIds, eventIds);
       await loadEvents();
     },
-    []
+    [attachItems, loadEvents]
   );
 
   const value = React.useMemo<EventsCtx>(
@@ -106,7 +109,6 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       loadEvents,
       getAllEvents,
       getEvents: getEventsByIds,
-      seeAllEvents,
       addEvent: addEventHandler,
       deleteEvents: deleteEventsHandler,
       attachItems: attachItemsHandler,
@@ -118,7 +120,6 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       loadEvents,
       getAllEvents,
       getEventsByIds,
-      seeAllEvents,
       addEventHandler,
       deleteEventsHandler,
       attachItemsHandler,

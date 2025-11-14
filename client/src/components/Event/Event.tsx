@@ -1,24 +1,29 @@
-import { View } from "react-native";
+import { View, StyleProp, ViewStyle } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
 import { EventID, EventType } from "../../types/event";
 import { memo } from "react";
+import { ItemType } from "../../types/item";
 
 type Props = {
   event: EventType;
+  items?: ItemType[];
   onPressWithCheckbox: (eventId: EventID) => void;
   onLongPress?: (eventId: EventID) => void;
   onPress?: (eventId: EventID) => void;
   withCheckBox?: boolean;
   selected?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
 function Event({
   event,
+  items,
   onPressWithCheckbox,
   onLongPress,
   onPress,
   withCheckBox,
   selected,
+  style,
 }: Props) {
   const theme = useTheme();
 
@@ -37,32 +42,70 @@ function Event({
   return (
     <Card
       mode={"outlined"}
-      style={{
-        marginVertical: 4,
-        elevation: 0,
-        shadowColor: "transparent",
-        justifyContent: "center",
-        // backgroundColor: theme.colors.surface,
-      }}
+      style={[
+        {
+          marginVertical: 4,
+          elevation: 0,
+          shadowColor: "transparent",
+          justifyContent: "center",
+          // backgroundColor: theme.colors.background,
+          overflow: "hidden",
+        },
+        style,
+      ]}
       onPress={onPressHandler}
       onLongPress={onLongPressHandler}
     >
       <Card.Content>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View
+          style={{
+            aspectRatio: 1,
+            gap: 4,
+          }}
+        >
           {withCheckBox && (
             <View
               style={{
-                margin: -9,
+                position: "absolute",
+                right: 0,
+                bottom: 0,
               }}
             >
-              <Checkbox status={selected ? "checked" : "unchecked"} />
+              <Checkbox.Android status={selected ? "checked" : "unchecked"} />
             </View>
           )}
-          <Text
-            style={{ fontSize: 18, marginLeft: 12, flex: 1, flexShrink: 1 }}
-          >
+          <Text variant="titleMedium" numberOfLines={2} ellipsizeMode="tail">
             {event.title}
           </Text>
+          <View style={{}}>
+            {items
+              ? items.slice(0, 6).map((item) => (
+                  <View
+                    key={item.id}
+                    style={{ flexDirection: "row", alignItems: "center" }}
+                  >
+                    <View
+                      style={{
+                        width: 6,
+                        height: 6,
+                        borderWidth: 1,
+                        borderRadius: 4,
+                        marginRight: 4,
+                        backgroundColor: theme.colors.onBackground,
+                        opacity: 0.5,
+                      }}
+                    />
+                    <Text
+                      variant="bodyMedium"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
+                    >
+                      {item.text}
+                    </Text>
+                  </View>
+                ))
+              : undefined}
+          </View>
         </View>
       </Card.Content>
     </Card>
@@ -73,6 +116,7 @@ const areEqual = (prev: Props, next: Props) => {
   if (prev.selected !== next.selected) return false;
   if (prev.withCheckBox !== next.withCheckBox) return false;
   if (prev.event.title !== next.event.title) return false;
+  if (prev.style !== next.style) return false;
   return true;
 };
 
