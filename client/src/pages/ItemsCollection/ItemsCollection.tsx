@@ -1,5 +1,5 @@
 import { useState, useContext, useCallback } from "react";
-import { View, FlatList, StyleSheet } from "react-native";
+import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import { darkTheme, lightTheme } from "../../theme/colors";
 import MainScreen from "../MainScreen";
@@ -110,9 +110,37 @@ export default function ItemsCollection() {
     clearSelection();
   }, [clearSelection]);
 
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      const allSelected = items.length > 0 && prev.size === items.length;
+      if (allSelected) return new Set();
+      return new Set(items.map((item) => item.id));
+    });
+  }, [items]);
+
   return (
     <MainScreen>
-      <Appbar.Header mode="center-aligned">
+      <Appbar.Header
+        mode="center-aligned"
+        style={{
+          backgroundColor: theme.colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.outlineVariant,
+        }}
+      >
+        {isEditMode && (
+          <TouchableOpacity onPress={toggleSelectAll}>
+            <Appbar.Action
+              icon={
+                items.length > 0 && selectedIds.size === items.length
+                  ? "checkbox-marked"
+                  : "checkbox-blank-outline"
+              }
+              disabled={!items.length}
+              animated={false}
+            />
+          </TouchableOpacity>
+        )}
         <Appbar.Content
           title={isEditMode ? titles.itemsEditMode : titles.items}
         />

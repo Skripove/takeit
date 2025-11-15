@@ -1,4 +1,4 @@
-import { View, FlatList, StyleSheet } from "react-native";
+import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import MainScreen from "../MainScreen";
 import { useCallback, useContext, useMemo, useState } from "react";
@@ -101,9 +101,37 @@ export default function EventsCollection({ navigation }: Props) {
     [itemsById]
   );
 
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds((prev) => {
+      const allSelected = events.length > 0 && prev.size === events.length;
+      if (allSelected) return new Set();
+      return new Set(events.map((event) => event.id));
+    });
+  }, [events]);
+
   return (
     <MainScreen>
-      <Appbar.Header mode="center-aligned">
+      <Appbar.Header
+        mode="center-aligned"
+        style={{
+          backgroundColor: theme.colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.outlineVariant,
+        }}
+      >
+        {isEditMode && (
+          <TouchableOpacity onPress={toggleSelectAll}>
+            <Appbar.Action
+              icon={
+                events.length > 0 && selectedIds.size === events.length
+                  ? "checkbox-marked"
+                  : "checkbox-blank-outline"
+              }
+              disabled={!events.length}
+              animated={false}
+            />
+          </TouchableOpacity>
+        )}
         <Appbar.Content
           title={isEditMode ? titles.eventsEditMode : titles.events}
         />

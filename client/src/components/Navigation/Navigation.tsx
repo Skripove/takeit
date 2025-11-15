@@ -7,10 +7,7 @@ import EventScreen from "../../pages/Event";
 import { useTheme } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
-import {
-  EventsStackParamList,
-  RootTabParamList,
-} from "../../types/navigation";
+import { EventsStackParamList, RootTabParamList } from "../../types/navigation";
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const EventsStack = createNativeStackNavigator<EventsStackParamList>();
@@ -33,8 +30,8 @@ export default function Navigation() {
           tabBarActiveTintColor: theme.colors.primary,
           tabBarInactiveTintColor: theme.colors.onSurfaceDisabled,
           tabBarStyle: {
-            backgroundColor: theme.colors.surface,
-            borderTopColor: theme.colors.outline,
+            backgroundColor: theme.colors.background,
+            borderTopColor: theme.colors.outlineVariant,
             borderTopWidth: 1,
           },
           tabBarButton: (props) => {

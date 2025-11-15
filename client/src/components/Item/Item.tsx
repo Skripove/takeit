@@ -25,10 +25,10 @@ function Item({ item, onPress, onLongPress, withCheckBox, selected }: Props) {
 
   return (
     <TouchableOpacity
-      activeOpacity={1} // без затемнения
+      activeOpacity={1}
       onPress={onPressHandler}
       onLongPress={onLongPressHandler}
-      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      // hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
       style={{
         flexDirection: "row",
         alignItems: "center",
