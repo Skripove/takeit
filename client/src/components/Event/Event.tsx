@@ -112,12 +112,4 @@ function Event({
   );
 }
 
-const areEqual = (prev: Props, next: Props) => {
-  if (prev.selected !== next.selected) return false;
-  if (prev.withCheckBox !== next.withCheckBox) return false;
-  if (prev.event.title !== next.event.title) return false;
-  if (prev.style !== next.style) return false;
-  return true;
-};
-
-export default memo(Event, areEqual);
+export default memo(Event);

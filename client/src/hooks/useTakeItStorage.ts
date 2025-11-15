@@ -23,11 +23,11 @@ type Storage = {
 
 const ITEMS_STORAGE_KEY = "items_storage";
 const EVENTS_STORAGE_KEY = "events_storage";
-
 const now = () => new Date().toISOString();
 const uid = () => Crypto.randomUUID();
 
 export const useTakeItStorage = (): Storage => {
+  // AsyncStorage.clear()
   const getAllItems = useCallback(async () => {
     const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
     if (!raw) return [];
@@ -96,8 +96,10 @@ export const useTakeItStorage = (): Storage => {
   // Events
   const addEvent = useCallback(async (title: string) => {
     const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!raw) throw new Error("Can't get storage events");
-    const storageEvents = JSON.parse(raw) as EventType[];
+    let storageEvents: EventType[] = [];
+    if (raw) {
+      storageEvents = JSON.parse(raw) as EventType[];
+    }
     const newStorageEvent: EventType = {
       id: uid(),
       title,
@@ -109,8 +111,7 @@ export const useTakeItStorage = (): Storage => {
       EVENTS_STORAGE_KEY,
       JSON.stringify(storageEvents)
     );
-    const { items, ...rest } = newStorageEvent;
-    return rest as EventType;
+    return newStorageEvent;
   }, []);
 
   const removeEvents = useCallback(async (eventIds: EventID[]) => {

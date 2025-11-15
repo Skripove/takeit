@@ -64,7 +64,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       allEvents.forEach((ev) => {
         map.set(ev.title, ev.items);
       });
-      console.log(map); //TODO REMOVE
+      // console.log(map); //TODO REMOVE
     })();
   }, [getAllEvents, events]);
 

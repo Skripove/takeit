@@ -92,12 +92,13 @@ export default function ItemsCollection() {
     if (selestedItemIds.length === items.length) {
       setIsEditMode(false);
     }
-    clearSelection();
+    onCloseEditItems();
   };
 
   const onAddItemsToEvents = async (selectedEventIds: EventID[]) => {
     const selestedItemIds = Array.from(selectedIds);
     await attachItems(selestedItemIds, selectedEventIds);
+    onCloseEditItems();
   };
 
   const onEditItems = useCallback(() => {

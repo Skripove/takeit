@@ -71,7 +71,7 @@ export default function EventsCollection({ navigation }: Props) {
   const onDeleteEvents = async () => {
     const selestedEventIds = Array.from(selectedIds);
     await deleteEvents(selestedEventIds);
-    clearSelection();
+    onCloseEditEvents();
   };
 
   const onCloseEditEvents = useCallback(() => {

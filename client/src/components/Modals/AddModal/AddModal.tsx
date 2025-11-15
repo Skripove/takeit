@@ -1,15 +1,12 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
-  Keyboard,
   Platform,
   StyleSheet,
   View,
-  useWindowDimensions,
   ScrollView,
   KeyboardAvoidingView,
 } from "react-native";
-import type { KeyboardEvent } from "react-native";
 import {
   useTheme,
   Portal,
@@ -31,7 +28,6 @@ export type AddModalProps = Omit<
 };
 
 const RADIUS = 16;
-const MIN_MODAL_HEIGHT = 160; // минимальная высота модалки, чтобы не схлопывалась
 
 const AddModal: React.FC<AddModalProps> = ({
   title,
@@ -42,51 +38,11 @@ const AddModal: React.FC<AddModalProps> = ({
 }) => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { height: winH } = useWindowDimensions();
 
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState("");
-  const [kbHeight, setKbHeight] = useState(0); // высота клавиатуры
 
   const topMargin = insets.top;
-  const KEYBOARD_GAP = Math.max(insets.bottom, 12); // зазор между клавой и модалкой
-
-  useEffect(() => {
-    const showEvent =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-    const onShow = (e: KeyboardEvent) => {
-      const { endCoordinates } = e;
-      const h =
-        Platform.OS === "ios"
-          ? Math.max(0, winH - endCoordinates.screenY)
-          : Math.max(0, endCoordinates.height);
-      setKbHeight(h);
-    };
-    const onHide = () => setKbHeight(0);
-
-    const s = Keyboard.addListener(showEvent, onShow);
-    const h = Keyboard.addListener(hideEvent, onHide);
-    return () => {
-      s.remove();
-      h.remove();
-    };
-  }, [winH]);
-
-  // Максимальная высота модалки: свободное пространство над клавиатурой (минус GAP)
-  const maxModalHeight =
-    kbHeight > 0
-      ? Math.max(MIN_MODAL_HEIGHT, winH - kbHeight - topMargin - KEYBOARD_GAP)
-      : undefined;
-
-  // Чтобы TextInput не «выпирал» и не менял высоту модалки — ограничим его.
-  // Берём разумную долю от доступной высоты. Можно подстроить под дизайн.
-  const maxInputHeight =
-    kbHeight > 0
-      ? Math.max(120, Math.floor((maxModalHeight ?? winH) * 0.6))
-      : 240;
 
   const submitHandler = async () => {
     const trimText = text.trim();
@@ -117,7 +73,6 @@ const AddModal: React.FC<AddModalProps> = ({
             marginHorizontal: 16,
             marginTop: topMargin,
             backgroundColor: theme.colors.surface,
-            maxHeight: maxModalHeight,
           },
         ]}
         {...props}
@@ -125,7 +80,6 @@ const AddModal: React.FC<AddModalProps> = ({
         <View style={[styles.innerClip, { borderRadius: RADIUS }]}>
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            keyboardVerticalOffset={topMargin + KEYBOARD_GAP}
             style={{ flexGrow: 0 }}
           >
             <ScrollView
@@ -156,9 +110,14 @@ const AddModal: React.FC<AddModalProps> = ({
                 multiline={multiline}
                 numberOfLines={multiline ? 6 : 1}
                 scrollEnabled={multiline}
-                style={multiline ? { maxHeight: maxInputHeight } : undefined}
                 contentStyle={
-                  multiline ? { textAlignVertical: "top" } : undefined
+                  multiline
+                    ? {
+                        textAlignVertical: "top",
+                        paddingTop: 8,
+                        paddingBottom: 8,
+                      }
+                    : undefined
                 }
               />
 
