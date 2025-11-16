@@ -2,7 +2,13 @@ import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import MainScreen from "../MainScreen";
 import { useCallback, useContext, useMemo, useState } from "react";
-import { AddModal, DeleteModal, Event, FloatingButton } from "../../components";
+import {
+  AddModal,
+  CustomMenu,
+  DeleteModal,
+  Event,
+  FloatingButton,
+} from "../../components";
 import { EventsContext, ItemsContext } from "../../provider";
 import { EventID, EventType } from "../../types/event";
 import { ItemType } from "../../types/item";
@@ -21,13 +27,15 @@ type Props = NativeStackScreenProps<EventsStackParamList, "EventsCollection">;
 
 export default function EventsCollection({ navigation }: Props) {
   const theme = useTheme();
-  const { events, addEvent, deleteEvents } = useContext(EventsContext);
+  const { events, addEvent, deleteEvents, clearEvents, loadEvents } =
+    useContext(EventsContext);
   const { items } = useContext(ItemsContext);
 
   const [selectedIds, setSelectedIds] = useState<Set<EventID>>(new Set());
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [settingsMenuVisible, setSettingsMenuVisible] = useState(false);
 
   const insets = useSafeAreaInsets();
   const tabBar = useBottomTabBarHeight?.() ?? 0;
@@ -62,6 +70,22 @@ export default function EventsCollection({ navigation }: Props) {
 
   const hideDeleteModal = () => {
     setShowDeleteModal(false);
+  };
+
+  const openSettingsMenu = () => {
+    setSettingsMenuVisible(true);
+  };
+
+  const closeSettingsMenu = () => {
+    setSettingsMenuVisible(false);
+  };
+
+  const onClearEvents = async () => {
+    await clearEvents();
+    await loadEvents();
+    setIsEditMode(false);
+    clearSelection();
+    closeSettingsMenu();
   };
 
   const onAddEvent = async (title: string) => {
@@ -135,7 +159,17 @@ export default function EventsCollection({ navigation }: Props) {
         <Appbar.Content
           title={isEditMode ? titles.eventsEditMode : titles.events}
         />
+        <TouchableOpacity onPress={openSettingsMenu}>
+          <Appbar.Action icon={"cog-outline"} animated={false} />
+        </TouchableOpacity>
       </Appbar.Header>
+
+      <CustomMenu
+        visible={settingsMenuVisible}
+        onDismiss={closeSettingsMenu}
+        position={{ top: insets.top + 56, right: 12 }}
+        items={[{ label: "Clear events", onPress: onClearEvents }]}
+      />
 
       <FlatList
         key={`columns-${numColumns}`}

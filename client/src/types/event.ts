@@ -7,4 +7,5 @@ export type EventType = {
   title: string;
   creationDate: string;
   items: ItemID[];
+  // checkedItems: ItemID[];
 };
