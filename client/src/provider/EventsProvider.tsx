@@ -12,6 +12,8 @@ type EventsCtx = {
   deleteEvents: (eventIds: EventID[]) => Promise<void>;
   clearEvents: () => Promise<void>;
   attachItems: (itemIds: ItemID[], eventIds: EventID[]) => Promise<void>;
+  checkItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
+  uncheckItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
   detachItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
 };
 
@@ -23,6 +25,8 @@ export const EventsContext = createContext<EventsCtx>({
   addEvent: async () => ({}) as EventType,
   deleteEvents: async () => undefined,
   attachItems: async () => {},
+  checkItems: async () => {},
+  uncheckItems: async () => {},
   detachItems: async () => {},
   clearEvents: async () => {},
 });
@@ -36,6 +40,8 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
     removeEvents,
     clearEvents,
     attachItems,
+    checkItems,
+    uncheckItems,
     detachItems,
   } = useTakeItStorage();
 
@@ -62,7 +68,10 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       const map = new Map();
       const allEvents = await getAllEvents();
       allEvents.forEach((ev) => {
-        map.set(ev.title, ev.items);
+        map.set(
+          ev.title,
+          ev.items.map((eventItem) => eventItem.itemId)
+        );
       });
       // console.log(map); //TODO REMOVE
     })();
@@ -103,6 +112,30 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
     [attachItems, loadEvents]
   );
 
+  const detachItemsHandler = useCallback(
+    async (itemIds: ItemID[], eventId: EventID) => {
+      await detachItems(itemIds, eventId);
+      await loadEvents();
+    },
+    [detachItems, loadEvents]
+  );
+
+  const checkItemsHandler = useCallback(
+    async (itemIds: ItemID[], eventId: EventID) => {
+      await checkItems(itemIds, eventId);
+      await loadEvents();
+    },
+    [checkItems, loadEvents]
+  );
+
+  const uncheckItemsHandler = useCallback(
+    async (itemIds: ItemID[], eventId: EventID) => {
+      await uncheckItems(itemIds, eventId);
+      await loadEvents();
+    },
+    [loadEvents, uncheckItems]
+  );
+
   const value = React.useMemo<EventsCtx>(
     () => ({
       events,
@@ -112,7 +145,9 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       addEvent: addEventHandler,
       deleteEvents: deleteEventsHandler,
       attachItems: attachItemsHandler,
-      detachItems,
+      detachItems: detachItemsHandler,
+      checkItems: checkItemsHandler,
+      uncheckItems: uncheckItemsHandler,
       clearEvents,
     }),
     [
@@ -123,7 +158,9 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       addEventHandler,
       deleteEventsHandler,
       attachItemsHandler,
-      detachItems,
+      detachItemsHandler,
+      checkItemsHandler,
+      uncheckItemsHandler,
       clearEvents,
     ]
   );

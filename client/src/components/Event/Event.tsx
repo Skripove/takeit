@@ -79,31 +79,38 @@ function Event({
           </Text>
           <View style={{}}>
             {items
-              ? items.slice(0, 6).map((item) => (
-                  <View
-                    key={item.id}
-                    style={{ flexDirection: "row", alignItems: "center" }}
-                  >
+              ? items.slice(0, 6).map((item) => {
+                  const isChecked = event.items.find(
+                    (evItem) => evItem.itemId === item.id
+                  )?.checked;
+                  return (
                     <View
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderWidth: 1,
-                        borderRadius: 4,
-                        marginRight: 4,
-                        backgroundColor: theme.colors.onBackground,
-                        opacity: 0.5,
-                      }}
-                    />
-                    <Text
-                      variant="bodyMedium"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
+                      key={item.id}
+                      style={{ flexDirection: "row", alignItems: "center" }}
                     >
-                      {item.text}
-                    </Text>
-                  </View>
-                ))
+                      <View
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderWidth: 1,
+                          borderRadius: 4,
+                          marginRight: 4,
+                          backgroundColor: isChecked
+                            ? theme.colors.onBackground
+                            : undefined,
+                          opacity: 0.5,
+                        }}
+                      />
+                      <Text
+                        variant="bodyMedium"
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                      >
+                        {item.text}
+                      </Text>
+                    </View>
+                  );
+                })
               : undefined}
           </View>
         </View>

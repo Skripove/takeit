@@ -10,15 +10,14 @@ import { EventsContext, ItemsContext } from "../../provider";
 import { ItemID, ItemType } from "../../types/item";
 import { EventsStackParamList } from "../../types/navigation";
 import MainScreen from "../MainScreen";
+import { EventType } from "../../types/event";
 
 type Props = NativeStackScreenProps<EventsStackParamList, "Event">;
-
-const noop: (itemId: ItemID) => void = () => {};
 
 export default function EventScreen({ navigation, route }: Props) {
   const theme = useTheme();
   const { eventId } = route.params;
-  const { getEvents } = useContext(EventsContext);
+  const { getEvents, checkItems, uncheckItems } = useContext(EventsContext);
   const { getItems } = useContext(ItemsContext);
 
   const insets = useSafeAreaInsets();
@@ -26,10 +25,13 @@ export default function EventScreen({ navigation, route }: Props) {
   const bottomSpacer = insets.bottom + tabBar + 72;
 
   const [loading, setLoading] = useState(true);
-  const [eventTitle, setEventTitle] = useState<string>("");
-  const [eventCreatedAt, setEventCreatedAt] = useState<string | null>(null);
-  const [items, setItems] = useState<ItemType[]>([]);
   const [missing, setMissing] = useState(false);
+
+  const [event, setEvent] = useState<EventType>();
+  const [items, setItems] = useState<ItemType[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<ItemID>>(
+    new Set()
+  );
 
   const loadEvent = useCallback(async () => {
     setLoading(true);
@@ -37,22 +39,28 @@ export default function EventScreen({ navigation, route }: Props) {
       const [currentEvent] = await getEvents([eventId]);
       if (!currentEvent) {
         setMissing(true);
-        setItems([]);
-        setEventTitle("");
-        setEventCreatedAt(null);
+        setSelectedItemIds(new Set());
         return;
       }
 
       setMissing(false);
-      setEventTitle(currentEvent.title);
-      setEventCreatedAt(currentEvent.creationDate);
+      setEvent(currentEvent);
+      setSelectedItemIds(
+        new Set(
+          currentEvent.items
+            .filter((eventItem) => eventItem.checked)
+            .map((eventItem) => eventItem.itemId)
+        )
+      );
 
       if (!currentEvent.items.length) {
         setItems([]);
         return;
       }
 
-      const storageItems = await getItems(currentEvent.items);
+      const storageItems = await getItems(
+        currentEvent.items.map((eventItem) => eventItem.itemId)
+      );
       setItems(storageItems);
     } catch (error) {
       console.error(error);
@@ -67,32 +75,70 @@ export default function EventScreen({ navigation, route }: Props) {
     }, [loadEvent])
   );
 
-  const creationDate = eventCreatedAt
-    ? new Date(eventCreatedAt).toLocaleString()
+  const toggleItemChecked = useCallback(
+    async (itemId: ItemID) => {
+      if (!event) return;
+
+      const currentlySelected = selectedItemIds.has(itemId);
+      setSelectedItemIds((prev) => {
+        const next = new Set(prev);
+        if (currentlySelected) {
+          next.delete(itemId);
+        } else {
+          next.add(itemId);
+        }
+        return next;
+      });
+
+      try {
+        if (currentlySelected) {
+          await uncheckItems([itemId], event.id);
+        } else {
+          await checkItems([itemId], event.id);
+        }
+
+        setEvent((prev) => {
+          if (!prev) return prev;
+          const updatedItems = prev.items.map((eventItem) =>
+            eventItem.itemId === itemId
+              ? { ...eventItem, checked: !currentlySelected }
+              : eventItem
+          );
+          return { ...prev, items: updatedItems };
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [checkItems, event, selectedItemIds, uncheckItems]
+  );
+
+  const creationDate = event?.creationDate
+    ? new Date(event?.creationDate).toLocaleString()
     : null;
 
   return (
     <MainScreen>
-      <Appbar.Header mode="center-aligned">
+      <Appbar.Header
+        mode="center-aligned"
+        style={{
+          backgroundColor: theme.colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.outlineVariant,
+        }}
+      >
         <Appbar.BackAction onPress={navigation.goBack} />
-        <Appbar.Content title={eventTitle || "Event"} />
+        <Appbar.Content title={event?.title || "Event"} />
       </Appbar.Header>
 
       <View
-        style={{
-          padding: 16,
-          gap: 16,
-        }}
+        style={
+          {
+            // padding: 16,
+            // gap: 16,
+          }
+        }
       >
-        {creationDate && (
-          <Text
-            variant="bodySmall"
-            style={{ color: theme.colors.onSurfaceVariant }}
-          >
-            Created: {creationDate}
-          </Text>
-        )}
-
         {loading ? (
           <ActivityIndicator style={{ marginTop: 32 }} />
         ) : missing ? (
@@ -103,8 +149,18 @@ export default function EventScreen({ navigation, route }: Props) {
           <FlatList
             data={items}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => <Item item={item} onPress={noop} />}
+            renderItem={({ item }) => (
+              <Item
+                item={item}
+                onPress={toggleItemChecked}
+                withCheckBox={true}
+                selected={selectedItemIds.has(item.id)}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ padding: 12 }}
             ListFooterComponent={<View style={{ height: bottomSpacer }} />}
+            initialNumToRender={items.length > 15 ? 15 : items.length}
           />
         )}
       </View>

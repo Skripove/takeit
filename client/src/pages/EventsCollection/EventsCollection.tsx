@@ -119,7 +119,7 @@ export default function EventsCollection({ navigation }: Props) {
   const getItemsForEvent = useCallback(
     (event: EventType) => {
       return event.items
-        .map((itemId) => itemsById.get(itemId))
+        .map((eventItem) => itemsById.get(eventItem.itemId))
         .filter((item): item is ItemType => Boolean(item));
     },
     [itemsById]
