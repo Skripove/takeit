@@ -1,4 +1,4 @@
-import { TouchableOpacity, View } from "react-native";
+import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
 import { ItemID, ItemType } from "../../types/item";
 import { memo, useMemo } from "react";
@@ -42,13 +42,10 @@ function Item({
       onPress={onPressHandler}
       onLongPress={onLongPressHandler}
       // hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-      }}
+      style={styles.container}
     >
       {withCheckBox && (
-        <View style={{}} pointerEvents="none">
+        <View pointerEvents="none">
           <Checkbox.Android
             theme={noAnimTheme}
             status={selected ? "checked" : "unchecked"}
@@ -58,21 +55,15 @@ function Item({
       )}
       <Card
         mode={"outlined"}
-        style={{
-          marginVertical: 4,
-          flex: 1,
-          opacity: lineThrough ? 0.6 : 1,
-        }}
+        style={[styles.card, lineThrough && styles.cardLineThrough]}
       >
         <Card.Content>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View style={styles.contentRow}>
             <Text
-              style={{
-                marginLeft: 12,
-                flex: 1,
-                flexShrink: 1,
-                textDecorationLine: lineThrough ? "line-through" : "none",
-              }}
+              style={[
+                styles.text,
+                lineThrough ? styles.textLineThrough : styles.textNormal,
+              ]}
             >
               {item.text}
             </Text>
@@ -82,6 +73,35 @@ function Item({
     </TouchableOpacity>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  card: {
+    marginVertical: 4,
+    flex: 1,
+  },
+  cardLineThrough: {
+    opacity: 0.6,
+  },
+  contentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  text: {
+    marginLeft: 12,
+    flex: 1,
+    flexShrink: 1,
+  },
+  textLineThrough: {
+    textDecorationLine: "line-through",
+  },
+  textNormal: {
+    textDecorationLine: "none",
+  },
+});
 
 const areEqual = (prev: Props, next: Props) => {
   if (prev.onPress !== next.onPress) return false;

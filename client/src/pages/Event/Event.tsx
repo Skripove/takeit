@@ -7,8 +7,9 @@ import React, {
   useRef,
   useState,
   useTransition,
+  useMemo,
 } from "react";
-import { FlatList, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
 import {
   ActivityIndicator,
   Appbar,
@@ -78,6 +79,34 @@ export default function EventScreen({ navigation, route }: Props) {
   const insets = useSafeAreaInsets();
   const tabBar = useBottomTabBarHeight?.() ?? 0;
   const bottomSpacer = insets.bottom + tabBar + 72;
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        appbarHeader: {
+          backgroundColor: theme.colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.outlineVariant,
+        },
+        appbarTitle: {
+          fontSize: 16,
+        },
+        rightActionContainer: {
+          justifyContent: "center",
+          alignItems: "center",
+          marginVertical: 4,
+        },
+        loadingIndicator: {
+          marginTop: 32,
+        },
+        listContent: {
+          padding: 12,
+        },
+        listFooter: {
+          height: bottomSpacer,
+        },
+      }),
+    [theme, bottomSpacer]
+  );
 
   const [loading, setLoading] = useState(true);
 
@@ -223,13 +252,7 @@ export default function EventScreen({ navigation, route }: Props) {
 
   const renderRightActions = useCallback(
     (itemId: ItemID) => (
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          marginVertical: 4,
-        }}
-      >
+      <View style={styles.rightActionContainer}>
         <IconButton
           icon="delete-outline"
           onPress={() => deleteItemFromIvent(itemId)}
@@ -238,7 +261,7 @@ export default function EventScreen({ navigation, route }: Props) {
         />
       </View>
     ),
-    [deleteItemFromIvent, theme.colors.error]
+    [deleteItemFromIvent, theme.colors.error, styles]
   );
 
   const renderItem = useCallback(
@@ -257,29 +280,18 @@ export default function EventScreen({ navigation, route }: Props) {
     <MainScreen>
       <Appbar.Header
         mode="center-aligned"
-        style={{
-          backgroundColor: theme.colors.background,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.outlineVariant,
-        }}
+        style={styles.appbarHeader}
       >
         <Appbar.BackAction onPress={navigation.goBack} />
         <Appbar.Content
           title={event?.title || "Event"}
-          titleStyle={{ fontSize: 16 }}
+          titleStyle={styles.appbarTitle}
         />
       </Appbar.Header>
 
-      <View
-        style={
-          {
-            // padding: 16,
-            // gap: 16,
-          }
-        }
-      >
+      <View>
         {loading ? (
-          <ActivityIndicator style={{ marginTop: 32 }} />
+          <ActivityIndicator style={styles.loadingIndicator} />
         ) : items.length === 0 ? (
           <Text variant="bodyLarge">No items attached yet.</Text>
         ) : (
@@ -288,8 +300,8 @@ export default function EventScreen({ navigation, route }: Props) {
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ padding: 12 }}
-            ListFooterComponent={<View style={{ height: bottomSpacer }} />}
+            contentContainerStyle={styles.listContent}
+            ListFooterComponent={<View style={styles.listFooter} />}
             initialNumToRender={items.length > 15 ? 15 : items.length}
             maxToRenderPerBatch={8}
             windowSize={5}

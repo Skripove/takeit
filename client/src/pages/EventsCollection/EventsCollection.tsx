@@ -44,6 +44,36 @@ export default function EventsCollection({ navigation }: Props) {
   const tabBar = useBottomTabBarHeight?.() ?? 0;
   const bottomSpacer = insets.bottom + tabBar + 72;
   const numColumns = 2;
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        appbarHeader: {
+          backgroundColor: theme.colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.outlineVariant,
+        },
+        appbarTitle: {
+          fontSize: 16,
+        },
+        listContent: {
+          padding: 12,
+        },
+        listFooter: {
+          height: bottomSpacer,
+        },
+        deleteFab: {
+          backgroundColor: theme.colors.errorContainer,
+        },
+        row: {
+          justifyContent: "space-between",
+        },
+        eventCard: {
+          flex: 0.49,
+          aspectRatio: 1,
+        },
+      }),
+    [theme, bottomSpacer]
+  );
 
   const toggleSelect = useCallback((eventId: EventID) => {
     setSelectedIds((prev) => {
@@ -150,7 +180,14 @@ export default function EventsCollection({ navigation }: Props) {
         style={styles.eventCard}
       />
     ),
-    [eventItemsMap, toggleSelect, onEditEvents, isEditMode, handleOpenEvent]
+    [
+      eventItemsMap,
+      toggleSelect,
+      onEditEvents,
+      isEditMode,
+      handleOpenEvent,
+      styles.eventCard,
+    ]
   );
 
   const toggleSelectAll = useCallback(() => {
@@ -163,14 +200,7 @@ export default function EventsCollection({ navigation }: Props) {
 
   return (
     <MainScreen>
-      <Appbar.Header
-        mode="center-aligned"
-        style={{
-          backgroundColor: theme.colors.background,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.outlineVariant,
-        }}
-      >
+      <Appbar.Header mode="center-aligned" style={styles.appbarHeader}>
         {isEditMode && (
           <TouchableOpacity onPress={toggleSelectAll}>
             <Appbar.Action
@@ -186,7 +216,7 @@ export default function EventsCollection({ navigation }: Props) {
         )}
         <Appbar.Content
           title={isEditMode ? titles.eventsEditMode : titles.events}
-          titleStyle={{ fontSize: 16 }}
+          titleStyle={styles.appbarTitle}
         />
         <TouchableOpacity onPress={openSettingsMenu}>
           <Appbar.Action icon={"cog-outline"} animated={false} />
@@ -207,8 +237,8 @@ export default function EventsCollection({ navigation }: Props) {
         numColumns={numColumns}
         columnWrapperStyle={styles.row}
         renderItem={renderEvent}
-        ListFooterComponent={<View style={{ height: bottomSpacer }} />}
-        contentContainerStyle={{ padding: 12 }}
+        ListFooterComponent={<View style={styles.listFooter} />}
+        contentContainerStyle={styles.listContent}
         extraData={selectedIds}
       />
 
@@ -219,7 +249,7 @@ export default function EventsCollection({ navigation }: Props) {
             icon="delete-outline"
             disabled={!Boolean(selectedIds.size)}
             position={FABPosition.fabBottomRightSecond}
-            style={{ backgroundColor: theme.colors.errorContainer }}
+            style={styles.deleteFab}
             color={theme.colors.onErrorContainer}
           />
           <FloatingButton
@@ -254,13 +284,3 @@ export default function EventsCollection({ navigation }: Props) {
     </MainScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    justifyContent: "space-between",
-  },
-  eventCard: {
-    flex: 0.49,
-    aspectRatio: 1,
-  },
-});

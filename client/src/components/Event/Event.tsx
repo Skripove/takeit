@@ -1,4 +1,4 @@
-import { View, StyleProp, ViewStyle } from "react-native";
+import { View, StyleProp, ViewStyle, StyleSheet } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
 import { EventID, EventType } from "../../types/event";
 import { memo, useMemo } from "react";
@@ -31,6 +31,43 @@ function Event({
     () => (items ? sortElements(items, "text", "asc") : []),
     [items]
   );
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        card: {
+          marginVertical: 4,
+          elevation: 0,
+          shadowColor: "transparent",
+          justifyContent: "center",
+          overflow: "hidden",
+        },
+        content: {
+          aspectRatio: 1,
+          gap: 4,
+        },
+        checkboxWrapper: {
+          position: "absolute",
+          right: 0,
+          bottom: 0,
+        },
+        itemRow: {
+          flexDirection: "row",
+          alignItems: "center",
+        },
+        itemBullet: {
+          width: 6,
+          height: 6,
+          borderWidth: 1,
+          borderRadius: 4,
+          marginRight: 4,
+          opacity: 0.5,
+        },
+        itemBulletChecked: {
+          backgroundColor: theme.colors.onBackground,
+        },
+      }),
+    [theme]
+  );
 
   const onPressHandler = () => {
     if (withCheckBox) {
@@ -47,35 +84,14 @@ function Event({
   return (
     <Card
       mode={"outlined"}
-      style={[
-        {
-          marginVertical: 4,
-          elevation: 0,
-          shadowColor: "transparent",
-          justifyContent: "center",
-          // backgroundColor: theme.colors.background,
-          overflow: "hidden",
-        },
-        style,
-      ]}
+      style={[styles.card, style]}
       onPress={onPressHandler}
       onLongPress={onLongPressHandler}
     >
       <Card.Content>
-        <View
-          style={{
-            aspectRatio: 1,
-            gap: 4,
-          }}
-        >
+        <View style={styles.content}>
           {withCheckBox && (
-            <View
-              style={{
-                position: "absolute",
-                right: 0,
-                bottom: 0,
-              }}
-            >
+            <View style={styles.checkboxWrapper}>
               <Checkbox.Android status={selected ? "checked" : "unchecked"} />
             </View>
           )}
@@ -90,20 +106,13 @@ function Event({
               return (
                 <View
                   key={item.id}
-                  style={{ flexDirection: "row", alignItems: "center" }}
+                  style={styles.itemRow}
                 >
                   <View
-                    style={{
-                      width: 6,
-                      height: 6,
-                      borderWidth: 1,
-                      borderRadius: 4,
-                      marginRight: 4,
-                      backgroundColor: isChecked
-                        ? theme.colors.onBackground
-                        : undefined,
-                      opacity: 0.5,
-                    }}
+                    style={[
+                      styles.itemBullet,
+                      isChecked && styles.itemBulletChecked,
+                    ]}
                   />
                   <Text
                     variant="bodyMedium"

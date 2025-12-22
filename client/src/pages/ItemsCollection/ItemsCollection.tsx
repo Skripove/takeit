@@ -3,6 +3,7 @@ import {
   useState,
   useContext,
   useCallback,
+  useMemo,
   useTransition,
   useRef,
 } from "react";
@@ -79,6 +80,29 @@ export default function ItemsCollection() {
   const insets = useSafeAreaInsets();
   const tabBar = useBottomTabBarHeight?.() ?? 0;
   const bottomSpacer = insets.bottom + tabBar + 72;
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        appbarHeader: {
+          backgroundColor: theme.colors.background,
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.outlineVariant,
+        },
+        appbarTitle: {
+          fontSize: 16,
+        },
+        listContent: {
+          padding: 12,
+        },
+        listFooter: {
+          height: bottomSpacer,
+        },
+        deleteFab: {
+          backgroundColor: theme.colors.errorContainer,
+        },
+      }),
+    [theme, bottomSpacer]
+  );
 
   const [selectedIds, setSelectedIds] = useState<Set<ItemID>>(new Set());
 
@@ -187,11 +211,7 @@ export default function ItemsCollection() {
     <MainScreen>
       <Appbar.Header
         mode="center-aligned"
-        style={{
-          backgroundColor: theme.colors.background,
-          borderBottomWidth: 1,
-          borderBottomColor: theme.colors.outlineVariant,
-        }}
+        style={styles.appbarHeader}
       >
         {isEditMode && (
           <TouchableOpacity onPress={toggleSelectAll}>
@@ -208,7 +228,7 @@ export default function ItemsCollection() {
         )}
         <Appbar.Content
           title={isEditMode ? titles.itemsEditMode : titles.items}
-          titleStyle={{ fontSize: 16 }}
+          titleStyle={styles.appbarTitle}
         />
       </Appbar.Header>
 
@@ -217,8 +237,8 @@ export default function ItemsCollection() {
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ padding: 12 }}
-        ListFooterComponent={<View style={{ height: bottomSpacer }} />}
+        contentContainerStyle={styles.listContent}
+        ListFooterComponent={<View style={styles.listFooter} />}
         initialNumToRender={items.length > 15 ? 15 : items.length}
         maxToRenderPerBatch={8}
         windowSize={5}
@@ -239,7 +259,7 @@ export default function ItemsCollection() {
             icon="delete-outline"
             disabled={!Boolean(selectedIds.size)}
             position={FABPosition.fabBottomRightSecond}
-            style={{ backgroundColor: theme.colors.errorContainer }}
+            style={styles.deleteFab}
             color={theme.colors.onErrorContainer}
           />
           <FloatingButton
@@ -285,6 +305,3 @@ export default function ItemsCollection() {
     </MainScreen>
   );
 }
-
-// Styles
-const styles = StyleSheet.create({});
