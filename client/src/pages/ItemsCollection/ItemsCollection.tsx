@@ -1,4 +1,11 @@
-import { useState, useContext, useCallback } from "react";
+import {
+  memo,
+  useState,
+  useContext,
+  useCallback,
+  useTransition,
+  useRef,
+} from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import { darkTheme, lightTheme } from "../../theme/colors";
@@ -11,7 +18,7 @@ import {
   Item,
 } from "../../components";
 import { EventsContext, ItemsContext } from "../../provider";
-import { ItemID } from "../../types/item";
+import { ItemID, ItemType } from "../../types/item";
 import { EventID } from "../../types/event";
 import { FABPosition } from "../../components/Buttons/FloatingButton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +28,48 @@ const titles = {
   items: "Items",
   itemsEditMode: "Items (edit mode)",
 };
+
+type ItemRowProps = {
+  item: ItemType;
+  selected: boolean;
+  onToggle: (itemId: ItemID) => void;
+  onLongPress: (itemId: ItemID) => void;
+  withCheckBox: boolean;
+};
+
+const ItemRow = memo(
+  ({ item, selected, onToggle, onLongPress, withCheckBox }: ItemRowProps) => {
+    const handlePress = useCallback(() => {
+      if (!withCheckBox) return;
+      onToggle(item.id);
+    }, [item.id, onToggle, withCheckBox]);
+
+    const handleLongPress = useCallback(() => {
+      onLongPress(item.id);
+    }, [item.id, onLongPress]);
+
+    return (
+      <View>
+        <Item
+          item={item}
+          onPress={handlePress}
+          onLongPress={handleLongPress}
+          withCheckBox={withCheckBox}
+          selected={selected}
+        />
+      </View>
+    );
+  },
+  (prev, next) =>
+    prev.selected === next.selected &&
+    prev.withCheckBox === next.withCheckBox &&
+    prev.onToggle === next.onToggle &&
+    prev.onLongPress === next.onLongPress &&
+    prev.item.id === next.item.id &&
+    prev.item.text === next.item.text &&
+    prev.item.creationDate === next.item.creationDate
+);
+ItemRow.displayName = "ItemRow";
 
 export default function ItemsCollection() {
   const theme = useTheme();
@@ -39,6 +88,9 @@ export default function ItemsCollection() {
     useState(false);
 
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const selectedIdsRef = useRef(selectedIds);
+  selectedIdsRef.current = selectedIds;
 
   const toggleSelect = useCallback((itemId: ItemID) => {
     setSelectedIds((prev) => {
@@ -102,8 +154,8 @@ export default function ItemsCollection() {
   };
 
   const onEditItems = useCallback(() => {
-    setIsEditMode(true);
-  }, []);
+    startTransition(() => setIsEditMode(true));
+  }, [startTransition]);
 
   const onCloseEditItems = useCallback(() => {
     setIsEditMode(false);
@@ -117,6 +169,19 @@ export default function ItemsCollection() {
       return new Set(items.map((item) => item.id));
     });
   }, [items]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ItemType }) => (
+      <ItemRow
+        item={item}
+        selected={selectedIdsRef.current.has(item.id)}
+        onToggle={toggleSelect}
+        onLongPress={onEditItems}
+        withCheckBox={isEditMode}
+      />
+    ),
+    [isEditMode, onEditItems, toggleSelect]
+  );
 
   return (
     <MainScreen>
@@ -143,26 +208,22 @@ export default function ItemsCollection() {
         )}
         <Appbar.Content
           title={isEditMode ? titles.itemsEditMode : titles.items}
+          titleStyle={{ fontSize: 16 }}
         />
       </Appbar.Header>
 
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <View>
-            <Item
-              item={item}
-              onPress={toggleSelect}
-              onLongPress={onEditItems}
-              withCheckBox={isEditMode}
-              selected={selectedIds.has(item.id)}
-            />
-          </View>
-        )}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 12 }}
         ListFooterComponent={<View style={{ height: bottomSpacer }} />}
+        initialNumToRender={items.length > 15 ? 15 : items.length}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        updateCellsBatchingPeriod={16}
+        removeClippedSubviews
       />
 
       {isEditMode ? (

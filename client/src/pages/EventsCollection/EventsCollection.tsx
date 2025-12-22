@@ -1,7 +1,7 @@
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
 import MainScreen from "../MainScreen";
-import { useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import {
   AddModal,
   CustomMenu,
@@ -17,6 +17,7 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { EventsStackParamList } from "../../types/navigation";
+import { sortElements } from "../../utils/sortElements";
 
 const titles = {
   events: "Events",
@@ -32,6 +33,8 @@ export default function EventsCollection({ navigation }: Props) {
   const { items } = useContext(ItemsContext);
 
   const [selectedIds, setSelectedIds] = useState<Set<EventID>>(new Set());
+  const selectedIdsRef = useRef(selectedIds);
+  selectedIdsRef.current = selectedIds;
   const [isEditMode, setIsEditMode] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -125,6 +128,31 @@ export default function EventsCollection({ navigation }: Props) {
     [itemsById]
   );
 
+  const eventItemsMap = useMemo(() => {
+    const map = new Map<EventID, ItemType[]>();
+    events.forEach((event) => {
+      const eventItems = getItemsForEvent(event);
+      map.set(event.id, sortElements(eventItems, "text", "asc"));
+    });
+    return map;
+  }, [events, getItemsForEvent]);
+
+  const renderEvent = useCallback(
+    ({ item: event }: { item: EventType }) => (
+      <Event
+        event={event}
+        items={eventItemsMap.get(event.id)}
+        onPressWithCheckbox={toggleSelect}
+        onLongPress={onEditEvents}
+        withCheckBox={isEditMode}
+        selected={selectedIdsRef.current.has(event.id)}
+        onPress={handleOpenEvent}
+        style={styles.eventCard}
+      />
+    ),
+    [eventItemsMap, toggleSelect, onEditEvents, isEditMode, handleOpenEvent]
+  );
+
   const toggleSelectAll = useCallback(() => {
     setSelectedIds((prev) => {
       const allSelected = events.length > 0 && prev.size === events.length;
@@ -158,6 +186,7 @@ export default function EventsCollection({ navigation }: Props) {
         )}
         <Appbar.Content
           title={isEditMode ? titles.eventsEditMode : titles.events}
+          titleStyle={{ fontSize: 16 }}
         />
         <TouchableOpacity onPress={openSettingsMenu}>
           <Appbar.Action icon={"cog-outline"} animated={false} />
@@ -177,20 +206,10 @@ export default function EventsCollection({ navigation }: Props) {
         keyExtractor={(event) => String(event.id)}
         numColumns={numColumns}
         columnWrapperStyle={styles.row}
-        renderItem={({ item: event }) => (
-          <Event
-            event={event}
-            items={getItemsForEvent(event)}
-            onPressWithCheckbox={toggleSelect}
-            onLongPress={onEditEvents}
-            withCheckBox={isEditMode}
-            selected={selectedIds.has(event.id)}
-            onPress={handleOpenEvent}
-            style={styles.eventCard}
-          />
-        )}
+        renderItem={renderEvent}
         ListFooterComponent={<View style={{ height: bottomSpacer }} />}
         contentContainerStyle={{ padding: 12 }}
+        extraData={selectedIds}
       />
 
       {isEditMode ? (
@@ -216,12 +235,6 @@ export default function EventsCollection({ navigation }: Props) {
             icon="plus"
             label="Create new Event"
             disabled={isEditMode}
-          />
-          <FloatingButton
-            onPress={onEditEvents}
-            icon="clipboard-edit-outline"
-            position={FABPosition.fabBottomRight}
-            disabled={!events.length}
           />
         </View>
       )}

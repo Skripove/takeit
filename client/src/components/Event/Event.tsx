@@ -1,8 +1,9 @@
 import { View, StyleProp, ViewStyle } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
 import { EventID, EventType } from "../../types/event";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { ItemType } from "../../types/item";
+import { sortElements } from "../../utils/sortElements";
 
 type Props = {
   event: EventType;
@@ -26,6 +27,10 @@ function Event({
   style,
 }: Props) {
   const theme = useTheme();
+  const sortedItems = useMemo(
+    () => (items ? sortElements(items, "text", "asc") : []),
+    [items]
+  );
 
   const onPressHandler = () => {
     if (withCheckBox) {
@@ -77,41 +82,39 @@ function Event({
           <Text variant="titleMedium" numberOfLines={2} ellipsizeMode="tail">
             {event.title}
           </Text>
-          <View style={{}}>
-            {items
-              ? items.slice(0, 6).map((item) => {
-                  const isChecked = event.items.find(
-                    (evItem) => evItem.itemId === item.id
-                  )?.checked;
-                  return (
-                    <View
-                      key={item.id}
-                      style={{ flexDirection: "row", alignItems: "center" }}
-                    >
-                      <View
-                        style={{
-                          width: 6,
-                          height: 6,
-                          borderWidth: 1,
-                          borderRadius: 4,
-                          marginRight: 4,
-                          backgroundColor: isChecked
-                            ? theme.colors.onBackground
-                            : undefined,
-                          opacity: 0.5,
-                        }}
-                      />
-                      <Text
-                        variant="bodyMedium"
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                      >
-                        {item.text}
-                      </Text>
-                    </View>
-                  );
-                })
-              : undefined}
+          <View>
+            {sortedItems.slice(0, 6).map((item) => {
+              const isChecked = event.items.find(
+                (evItem) => evItem.itemId === item.id
+              )?.checked;
+              return (
+                <View
+                  key={item.id}
+                  style={{ flexDirection: "row", alignItems: "center" }}
+                >
+                  <View
+                    style={{
+                      width: 6,
+                      height: 6,
+                      borderWidth: 1,
+                      borderRadius: 4,
+                      marginRight: 4,
+                      backgroundColor: isChecked
+                        ? theme.colors.onBackground
+                        : undefined,
+                      opacity: 0.5,
+                    }}
+                  />
+                  <Text
+                    variant="bodyMedium"
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.text}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         </View>
       </Card.Content>

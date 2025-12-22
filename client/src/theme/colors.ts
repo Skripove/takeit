@@ -8,41 +8,41 @@ export const lightTheme: MD3Theme = {
   colors: {
     ...MD3LightTheme.colors,
 
-    // Primary (коричнево-оранжевый)
-    primary: "#A06E3D",
+    // Primary
+    primary: "#2563EB",
     onPrimary: "#FFFFFF",
-    primaryContainer: "#F0DCC9",
-    onPrimaryContainer: "#3A2616",
-    inversePrimary: "#E0B389",
+    primaryContainer: "#E2E8FF",
+    onPrimaryContainer: "#1E3A8A",
+    inversePrimary: "#A4C2FF",
 
     // Secondary / Tertiary
-    secondary: "#8A7D70",
+    secondary: "#475569",
     onSecondary: "#FFFFFF",
-    secondaryContainer: "#E9DED4",
-    onSecondaryContainer: "#2D261F",
+    secondaryContainer: "#E2E8F0",
+    onSecondaryContainer: "#1F2937",
 
-    tertiary: "#A07E5A",
+    tertiary: "#16A34A",
     onTertiary: "#FFFFFF",
-    tertiaryContainer: "#F1E0D0",
-    onTertiaryContainer: "#3A2716",
+    tertiaryContainer: "#DCFCE7",
+    onTertiaryContainer: "#14532D",
 
     // Surfaces / Background
-    background: "#FAF3E7",
-    onBackground: "#1F1B16",
-    surface: "#FFF8EC",
-    onSurface: "#1F1B16",
-    surfaceVariant: "#EEE3D6",
-    onSurfaceVariant: "#51453A",
+    background: "#FFFFFF",
+    onBackground: "#1F2933",
+    surface: "#FFFFFF",
+    onSurface: "#1F2933",
+    surfaceVariant: "#E5E7EB",
+    onSurfaceVariant: "#4B5563",
 
     // Outline / Error / Inverse
-    outline: "#9C8F84",
-    outlineVariant: "#D2C5B8",
-    error: "#BA1A1A",
+    outline: "#94A3B8",
+    outlineVariant: "#CBD5E1",
+    error: "#B91C1C",
     onError: "#FFFFFF",
-    errorContainer: "#FFDAD6",
-    onErrorContainer: "#410002",
-    inverseSurface: "#2E2A25",
-    inverseOnSurface: "#F8EFE4",
+    errorContainer: "#FEE2E2",
+    onErrorContainer: "#7F1D1D",
+    inverseSurface: "#111827",
+    inverseOnSurface: "#F1F5F9",
 
     // Доп. стандартные ключи у RNP (если есть в твоей версии)
     surfaceDisabled: MD3LightTheme.colors.surfaceDisabled,
@@ -57,41 +57,41 @@ export const darkTheme: MD3Theme = {
   colors: {
     ...MD3DarkTheme.colors,
 
-    // Primary (парный к светлому)
-    primary: "#E0B389",
-    onPrimary: "#3A2616",
-    primaryContainer: "#5C3E25",
-    onPrimaryContainer: "#F0DCC9",
-    inversePrimary: "#A06E3D",
+    // Primary
+    primary: "#93B2FF",
+    onPrimary: "#0A1E4F",
+    primaryContainer: "#1E3A8A",
+    onPrimaryContainer: "#E2E8FF",
+    inversePrimary: "#2563EB",
 
     // Secondary / Tertiary
-    secondary: "#D0C4B7",
-    onSecondary: "#362E27",
-    secondaryContainer: "#51453A",
-    onSecondaryContainer: "#E9DED4",
+    secondary: "#B8C2D4",
+    onSecondary: "#141B24",
+    secondaryContainer: "#28303D",
+    onSecondaryContainer: "#E2E8F0",
 
-    tertiary: "#E1C2A3",
-    onTertiary: "#3D2A1A",
-    tertiaryContainer: "#5B4634",
-    onTertiaryContainer: "#F1E0D0",
+    tertiary: "#5AE287",
+    onTertiary: "#0E2415",
+    tertiaryContainer: "#14532D",
+    onTertiaryContainer: "#D1FADF",
 
     // Surfaces / Background
-    background: "#15130F",
-    onBackground: "#EAE1D6",
-    surface: "#1C1914",
-    onSurface: "#EAE1D6",
-    surfaceVariant: "#51453A",
-    onSurfaceVariant: "#D2C5B8",
+    background: "#0B0F14",
+    onBackground: "#E5EAF0",
+    surface: "#0F141B",
+    onSurface: "#E5EAF0",
+    surfaceVariant: "#1F2933",
+    onSurfaceVariant: "#B8C2D4",
 
     // Outline / Error / Inverse
-    outline: "#9C8F84",
-    outlineVariant: "#51453A",
-    error: "#BA1A1A",
-    onError: "#FFFFFF",
-    errorContainer: "#FFDAD6",
-    onErrorContainer: "#410002",
-    inverseSurface: "#2E2A25",
-    inverseOnSurface: "#F8EFE4",
+    outline: "#556070",
+    outlineVariant: "#2F3946",
+    error: "#FCA5A5",
+    onError: "#450A0A",
+    errorContainer: "#7F1D1D",
+    onErrorContainer: "#FEE2E2",
+    inverseSurface: "#E5EAF0",
+    inverseOnSurface: "#0C1118",
 
     // Доп. стандартные ключи (если есть)
     surfaceDisabled: MD3DarkTheme.colors.surfaceDisabled,

@@ -2,6 +2,7 @@ import React from "react";
 import { Provider as PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { lightTheme, darkTheme } from "./src/theme/colors";
 import Navigation from "./src/components/Navigation";
 import { ItemsProvider } from "./src/provider/ItemsProvider";
@@ -18,14 +19,16 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
-      <PaperProvider theme={isDark ? darkTheme : lightTheme}>
-        <EventsProvider>
-          <ItemsProvider>
-            <Navigation />
-          </ItemsProvider>
-        </EventsProvider>
-      </PaperProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <PaperProvider theme={isDark ? darkTheme : lightTheme}>
+          <EventsProvider>
+            <ItemsProvider>
+              <Navigation />
+            </ItemsProvider>
+          </EventsProvider>
+        </PaperProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
