@@ -1,3 +1,4 @@
+import "react-native-reanimated";
 import React from "react";
 import { Provider as PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -7,6 +8,7 @@ import { lightTheme, darkTheme } from "./src/theme/colors";
 import Navigation from "./src/components/Navigation";
 import { ItemsProvider } from "./src/provider/ItemsProvider";
 import { EventsProvider } from "./src/provider";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 
 export default function App() {
   const [isDark, setIsDark] = React.useState(false);
@@ -19,16 +21,18 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <PaperProvider theme={isDark ? darkTheme : lightTheme}>
-          <EventsProvider>
-            <ItemsProvider>
-              <Navigation />
-            </ItemsProvider>
-          </EventsProvider>
-        </PaperProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <KeyboardProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider>
+          <PaperProvider theme={isDark ? darkTheme : lightTheme}>
+            <EventsProvider>
+              <ItemsProvider>
+                <Navigation />
+              </ItemsProvider>
+            </EventsProvider>
+          </PaperProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </KeyboardProvider>
   );
 }
