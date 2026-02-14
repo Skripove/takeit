@@ -1,9 +1,9 @@
 import { View, StyleProp, ViewStyle, StyleSheet } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
-import { EventID, EventType } from "../../types/event";
+import { EventID, EventType } from "@/types/event";
 import { memo, useMemo } from "react";
-import { ItemType } from "../../types/item";
-import { sortElements } from "../../utils/sortElements";
+import { ItemType } from "@/types/item";
+import { sortElements } from "@/utils/sortElements";
 
 type Props = {
   event: EventType;

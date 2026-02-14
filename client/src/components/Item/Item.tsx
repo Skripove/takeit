@@ -1,6 +1,6 @@
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
-import { ItemID, ItemType } from "../../types/item";
+import { ItemID, ItemType } from "@/types/item";
 import { memo, useMemo } from "react";
 
 type Props = {

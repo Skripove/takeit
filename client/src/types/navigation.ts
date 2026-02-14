@@ -1,4 +1,4 @@
-import { EventID } from "./event";
+import { EventID } from "@/types/event";
 
 export type EventsStackParamList = {
   EventsCollection: undefined;

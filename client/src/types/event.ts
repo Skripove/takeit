@@ -1,4 +1,4 @@
-import { ItemID } from "./item";
+import { ItemID } from "@/types/item";
 
 export type EventID = string;
 

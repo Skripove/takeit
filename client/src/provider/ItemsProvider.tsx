@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { ItemID, ItemType } from "../types/item";
-import { useTakeItStorage } from "../hooks/useTakeItStorage";
+import { ItemID, ItemType } from "@/types/item";
+import { useTakeItStorage } from "@/hooks/useTakeItStorage";
 
 type ItemsCtx = {
   items: ItemType[];

@@ -1,5 +1,5 @@
-import { ItemID, ItemType } from "../types/item";
-import { EventID, EventItem, EventType } from "../types/event";
+import { ItemID, ItemType } from "@/types/item";
+import { EventID, EventItem, EventType } from "@/types/event";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Crypto from "expo-crypto";
 import { useCallback } from "react";

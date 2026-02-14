@@ -1,13 +1,13 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import ItemsCollection from "../../pages/ItemsCollection";
-import EventsCollection from "../../pages/EventsCollection";
-import EventScreen from "../../pages/Event";
+import ItemsCollection from "@/pages/ItemsCollection";
+import EventsCollection from "@/pages/EventsCollection";
+import EventScreen from "@/pages/Event";
 import { useTheme } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native";
-import { EventsStackParamList, RootTabParamList } from "../../types/navigation";
+import { EventsStackParamList, RootTabParamList } from "@/types/navigation";
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const EventsStack = createNativeStackNavigator<EventsStackParamList>();

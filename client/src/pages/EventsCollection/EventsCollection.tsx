@@ -1,6 +1,6 @@
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, useTheme } from "react-native-paper";
-import MainScreen from "../MainScreen";
+import MainScreen from "@/pages/MainScreen";
 import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import {
   AddModal,
@@ -8,16 +8,16 @@ import {
   DeleteModal,
   Event,
   FloatingButton,
-} from "../../components";
-import { EventsContext, ItemsContext } from "../../provider";
-import { EventID, EventType } from "../../types/event";
-import { ItemType } from "../../types/item";
-import { FABPosition } from "../../components/Buttons/FloatingButton";
+} from "@/components";
+import { EventsContext, ItemsContext } from "@/provider";
+import { EventID, EventType } from "@/types/event";
+import { ItemType } from "@/types/item";
+import { FABPosition } from "@/components/Buttons/FloatingButton";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { EventsStackParamList } from "../../types/navigation";
-import { sortElements } from "../../utils/sortElements";
+import { EventsStackParamList } from "@/types/navigation";
+import { sortElements } from "@/utils/sortElements";
 
 const titles = {
   events: "Events",

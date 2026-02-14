@@ -9,8 +9,8 @@ import {
   Button,
   Chip,
 } from "react-native-paper";
-import { EventID, EventType } from "../../../types/event";
-import { EventsContext } from "../../../provider";
+import { EventID, EventType } from "@/types/event";
+import { EventsContext } from "@/provider";
 
 export type AddItemsToEventsModalProps = Omit<
   React.ComponentProps<typeof Modal>,

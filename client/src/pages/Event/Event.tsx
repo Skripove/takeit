@@ -20,13 +20,13 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { Swipeable } from "react-native-gesture-handler";
-import { Item } from "../../components";
-import { EventsContext, ItemsContext } from "../../provider";
-import { ItemID, ItemType } from "../../types/item";
-import { EventsStackParamList } from "../../types/navigation";
-import MainScreen from "../MainScreen";
-import { EventType } from "../../types/event";
-import { sortElements } from "../../utils/sortElements";
+import { Item } from "@/components";
+import { EventsContext, ItemsContext } from "@/provider";
+import { ItemID, ItemType } from "@/types/item";
+import { EventsStackParamList } from "@/types/navigation";
+import MainScreen from "@/pages/MainScreen";
+import { EventType } from "@/types/event";
+import { sortElements } from "@/utils/sortElements";
 
 type Props = NativeStackScreenProps<EventsStackParamList, "Event">;
 

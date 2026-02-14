@@ -9,18 +9,18 @@ import {
 } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import { Appbar, IconButton, TextInput, useTheme } from "react-native-paper";
-import { darkTheme, lightTheme } from "../../theme/colors";
-import MainScreen from "../MainScreen";
+import { darkTheme, lightTheme } from "@/theme/colors";
+import MainScreen from "@/pages/MainScreen";
 import {
   AddItemsToEventsModal,
   DeleteModal,
   FloatingButton,
   Item,
-} from "../../components";
-import { EventsContext, ItemsContext } from "../../provider";
-import { ItemID, ItemType } from "../../types/item";
-import { EventID } from "../../types/event";
-import { FABPosition } from "../../components/Buttons/FloatingButton";
+} from "@/components";
+import { EventsContext, ItemsContext } from "@/provider";
+import { ItemID, ItemType } from "@/types/item";
+import { EventID } from "@/types/event";
+import { FABPosition } from "@/components/Buttons/FloatingButton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { KeyboardStickyView } from "react-native-keyboard-controller";

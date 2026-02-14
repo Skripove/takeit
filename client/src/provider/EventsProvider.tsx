@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { EventID, EventType } from "../types/event";
-import { useTakeItStorage } from "../hooks/useTakeItStorage";
-import { ItemID } from "../types/item";
+import { EventID, EventType } from "@/types/event";
+import { useTakeItStorage } from "@/hooks/useTakeItStorage";
+import { ItemID } from "@/types/item";
 
 type EventsCtx = {
   events: EventType[];
