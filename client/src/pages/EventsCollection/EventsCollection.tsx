@@ -1,4 +1,5 @@
-import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import { Appbar, useTheme } from "react-native-paper";
 import MainScreen from "@/pages/MainScreen";
 import { useCallback, useContext, useMemo, useRef, useState } from "react";

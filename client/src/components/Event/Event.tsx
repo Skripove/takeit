@@ -1,4 +1,11 @@
-import { View, StyleProp, ViewStyle, StyleSheet } from "react-native";
+import {
+  View,
+  StyleProp,
+  ViewStyle,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { Card, Text, useTheme, Checkbox } from "react-native-paper";
 import { EventID, EventType } from "@/types/event";
 import { memo, useMemo } from "react";
@@ -27,6 +34,9 @@ function Event({
   style,
 }: Props) {
   const theme = useTheme();
+  const ITEM_ROW_HEIGHT = 22;
+  const MAX_VISIBLE_ITEMS = 6;
+  const itemsListHeight = ITEM_ROW_HEIGHT * MAX_VISIBLE_ITEMS;
   const sortedItems = useMemo(
     () => (items ? sortElements(items, "text", "asc") : []),
     [items]
@@ -50,7 +60,15 @@ function Event({
           right: 0,
           bottom: 0,
         },
+        itemsScroll: {
+          height: itemsListHeight,
+        },
         itemRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          minHeight: ITEM_ROW_HEIGHT,
+        },
+        itemRowStatic: {
           flexDirection: "row",
           alignItems: "center",
         },
@@ -66,7 +84,7 @@ function Event({
           backgroundColor: theme.colors.onBackground,
         },
       }),
-    [theme]
+    [theme, itemsListHeight, ITEM_ROW_HEIGHT]
   );
 
   const onPressHandler = () => {
@@ -79,6 +97,25 @@ function Event({
 
   const onLongPressHandler = () => {
     onLongPress?.(event.id);
+  };
+
+  const renderItemRow = (item: ItemType, rowStyle: ViewStyle) => {
+    const isChecked = event.items.find(
+      (evItem) => evItem.itemId === item.id
+    )?.checked;
+    return (
+      <View key={item.id} style={rowStyle}>
+        <View
+          style={[
+            styles.itemBullet,
+            isChecked && styles.itemBulletChecked,
+          ]}
+        />
+        <Text variant="bodyMedium" numberOfLines={1} ellipsizeMode="tail">
+          {item.text}
+        </Text>
+      </View>
+    );
   };
 
   return (
@@ -98,33 +135,21 @@ function Event({
           <Text variant="titleMedium" numberOfLines={2} ellipsizeMode="tail">
             {event.title}
           </Text>
-          <View>
-            {sortedItems.slice(0, 6).map((item) => {
-              const isChecked = event.items.find(
-                (evItem) => evItem.itemId === item.id
-              )?.checked;
-              return (
-                <View
-                  key={item.id}
-                  style={styles.itemRow}
-                >
-                  <View
-                    style={[
-                      styles.itemBullet,
-                      isChecked && styles.itemBulletChecked,
-                    ]}
-                  />
-                  <Text
-                    variant="bodyMedium"
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.text}
-                  </Text>
-                </View>
-              );
-            })}
-          </View>
+          {sortedItems.length > MAX_VISIBLE_ITEMS ? (
+            <ScrollView
+              style={styles.itemsScroll}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={Platform.OS === "android"}
+            >
+              {sortedItems.map((item) => renderItemRow(item, styles.itemRow))}
+            </ScrollView>
+          ) : (
+            <View>
+              {sortedItems.map((item) =>
+                renderItemRow(item, styles.itemRowStatic)
+              )}
+            </View>
+          )}
         </View>
       </Card.Content>
     </Card>
