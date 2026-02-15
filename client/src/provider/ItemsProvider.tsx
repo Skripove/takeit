@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { ItemID, ItemType } from "@/types/item";
-import { useTakeItStorage } from "@/hooks/useTakeItStorage";
+import { useStorage } from "./StorageProvider";
 
 type ItemsCtx = {
   items: ItemType[];
@@ -23,7 +23,7 @@ export const ItemsContext = createContext<ItemsCtx>({
 export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
   children,
 }) => {
-  const { getAllItems, addItems, removeItems, clearItems } = useTakeItStorage();
+  const { getAllItems, addItems, removeItems, clearItems } = useStorage();
 
   const [items, setItems] = useState<ItemType[]>([]);
 

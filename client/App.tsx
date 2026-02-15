@@ -6,8 +6,11 @@ import { useFonts } from "expo-font";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { lightTheme, darkTheme } from "@/theme/colors";
 import Navigation from "@/components/Navigation";
-import { ItemsProvider } from "@/provider/ItemsProvider";
-import { EventsProvider } from "@/provider";
+import {
+  EventsProvider,
+  ItemsProvider,
+  StorageProvider,
+} from "@/provider";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 
 export default function App() {
@@ -25,11 +28,13 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <PaperProvider theme={isDark ? darkTheme : lightTheme}>
-            <EventsProvider>
-              <ItemsProvider>
-                <Navigation />
-              </ItemsProvider>
-            </EventsProvider>
+            <StorageProvider>
+              <EventsProvider>
+                <ItemsProvider>
+                  <Navigation />
+                </ItemsProvider>
+              </EventsProvider>
+            </StorageProvider>
           </PaperProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

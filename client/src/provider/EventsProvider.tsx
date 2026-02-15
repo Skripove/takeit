@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
 import { EventID, EventType } from "@/types/event";
-import { useTakeItStorage } from "@/hooks/useTakeItStorage";
+import { useStorage } from "./StorageProvider";
 import { ItemID } from "@/types/item";
 
 type EventsCtx = {
@@ -43,7 +43,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
     checkItems,
     uncheckItems,
     detachItems,
-  } = useTakeItStorage();
+  } = useStorage();
 
   const [events, setEvents] = useState<EventType[]>([]);
 

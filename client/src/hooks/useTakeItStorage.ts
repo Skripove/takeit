@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Crypto from "expo-crypto";
 import { useCallback } from "react";
 
-type Storage = {
+export type Storage = {
   getAllItems: () => Promise<ItemType[]>;
   getAllEvents: () => Promise<EventType[]>;
   // Items
