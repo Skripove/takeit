@@ -8,7 +8,7 @@ import {
   useRef,
 } from "react";
 import { View, FlatList, StyleSheet, TouchableOpacity } from "react-native";
-import { Appbar, IconButton, TextInput, useTheme } from "react-native-paper";
+import { Appbar, useTheme } from "react-native-paper";
 import { darkTheme, lightTheme } from "@/theme/colors";
 import MainScreen from "@/pages/MainScreen";
 import {
@@ -16,6 +16,7 @@ import {
   DeleteModal,
   FloatingButton,
   Item,
+  StickyTextInput,
 } from "@/components";
 import { EventsContext, ItemsContext } from "@/provider";
 import { ItemID, ItemType } from "@/types/item";
@@ -23,7 +24,6 @@ import { EventID } from "@/types/event";
 import { FABPosition } from "@/components/Buttons/FloatingButton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { KeyboardStickyView } from "react-native-keyboard-controller";
 
 const titles = {
   items: "Items",
@@ -81,7 +81,6 @@ export default function ItemsCollection() {
   const tabBar = useBottomTabBarHeight?.() ?? 0;
   const composerBaseHeight = 72;
   const bottomSpacer = insets.bottom + tabBar + composerBaseHeight + 12;
-  console.log(insets.bottom, tabBar, composerBaseHeight, 12); // TODO REMOVE
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -99,27 +98,13 @@ export default function ItemsCollection() {
         listFooter: {
           height: bottomSpacer * 2,
         },
+        fabAddToEvent: {
+          bottom: composerBaseHeight,
+        },
         deleteFab: {
           backgroundColor: theme.colors.errorContainer,
+          bottom: composerBaseHeight,
         },
-        composer: {
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 12,
-        },
-        composerInput: {
-          flex: 1,
-          maxHeight: 150,
-        },
-        composerInputContent: {
-          overflow: "hidden",
-          borderRadius: 25,
-          backgroundColor: theme.colors.primaryContainer,
-          opacity: 0.6,
-        },
-        composerInputOutlineStyle: { borderRadius: 25, borderWidth: 1 },
       }),
     [theme, bottomSpacer],
   );
@@ -135,6 +120,17 @@ export default function ItemsCollection() {
   selectedIdsRef.current = selectedIds;
 
   const [text, setText] = useState("");
+  const [filterText, setFilterText] = useState("");
+
+  const filteredItems = useMemo(() => {
+    const query = filterText.trim();
+    if (!query) return items;
+    const lower = query.toLowerCase();
+    return items.filter((item) => item.text.toLowerCase().includes(lower));
+  }, [items, filterText]);
+
+  const listData = isEditMode ? filteredItems : items;
+
   const toggleSelect = useCallback((itemId: ItemID) => {
     setSelectedIds((prev) => {
       const newSet = new Set(prev);
@@ -200,16 +196,18 @@ export default function ItemsCollection() {
 
   const onCloseEditItems = useCallback(() => {
     setIsEditMode(false);
+    setFilterText("");
     clearSelection();
   }, [clearSelection]);
 
   const toggleSelectAll = useCallback(() => {
     setSelectedIds((prev) => {
-      const allSelected = items.length > 0 && prev.size === items.length;
+      const list = isEditMode ? filteredItems : items;
+      const allSelected = list.length > 0 && prev.size === list.length;
       if (allSelected) return new Set();
-      return new Set(items.map((item) => item.id));
+      return new Set(list.map((item) => item.id));
     });
-  }, [items]);
+  }, [items, isEditMode, filteredItems]);
 
   const renderItem = useCallback(
     ({ item }: { item: ItemType }) => (
@@ -231,11 +229,11 @@ export default function ItemsCollection() {
           <TouchableOpacity onPress={toggleSelectAll}>
             <Appbar.Action
               icon={
-                items.length > 0 && selectedIds.size === items.length
+                listData.length > 0 && selectedIds.size === listData.length
                   ? "checkbox-marked"
                   : "checkbox-blank-outline"
               }
-              disabled={!items.length}
+              disabled={!listData.length}
               animated={false}
             />
           </TouchableOpacity>
@@ -244,63 +242,44 @@ export default function ItemsCollection() {
           title={isEditMode ? titles.itemsEditMode : titles.items}
           titleStyle={styles.appbarTitle}
         />
+        {isEditMode && (
+          <Appbar.Action
+            icon="close"
+            onPress={onCloseEditItems}
+            animated={false}
+          />
+        )}
       </Appbar.Header>
 
       <FlatList
-        data={items}
+        data={listData}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ListFooterComponent={<View style={styles.listFooter} />}
-        initialNumToRender={items.length > 15 ? 15 : items.length}
+        initialNumToRender={listData.length > 15 ? 15 : listData.length}
         maxToRenderPerBatch={8}
         windowSize={5}
         updateCellsBatchingPeriod={16}
         removeClippedSubviews
       />
 
-      {!isEditMode && (
-        <KeyboardStickyView
-          style={styles.composer}
-          offset={{ closed: -6, opened: tabBar - 6 }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "flex-end",
-              justifyContent: "space-between",
-              gap: 6,
-            }}
-          >
-            <TextInput
-              mode="outlined"
-              dense
-              placeholder="Add items..."
-              value={text}
-              onChangeText={setText}
-              multiline
-              returnKeyType="default"
-              style={styles.composerInput}
-              contentStyle={styles.composerInputContent}
-              outlineStyle={styles.composerInputOutlineStyle}
-            />
-            <IconButton
-              icon="plus"
-              onPress={submitText}
-              disabled={!text.trim()}
-              mode="outlined"
-              containerColor={
-                text.trim() ? theme.colors.primaryContainer : undefined
-              }
-              style={{
-                margin: 0,
-                marginBottom: 4,
-                opacity: 0.8,
-              }}
-            />
-          </View>
-        </KeyboardStickyView>
+      {!isEditMode ? (
+        <StickyTextInput
+          value={text}
+          onChangeText={setText}
+          onSubmit={submitText}
+          placeholder="Add items..."
+          keyboardOpenedOffset={tabBar - 6}
+        />
+      ) : (
+        <StickyTextInput
+          value={filterText}
+          onChangeText={setFilterText}
+          placeholder="Filter items..."
+          keyboardOpenedOffset={tabBar - 6}
+        />
       )}
 
       {isEditMode && (
@@ -311,21 +290,17 @@ export default function ItemsCollection() {
                 onPress={handleShowAddItemsToEventsModal}
                 icon="plus"
                 label="Add to Event..."
+                style={styles.fabAddToEvent}
               />
               <FloatingButton
                 onPress={handleShowDeleteModal}
                 icon="delete-outline"
-                position={FABPosition.fabBottomRightSecond}
-                style={styles.deleteFab}
+                position={FABPosition.fabBottomRight}
+                style={[styles.deleteFab]}
                 color={theme.colors.onErrorContainer}
               />
             </>
           )}
-          <FloatingButton
-            onPress={onCloseEditItems}
-            icon="close"
-            position={FABPosition.fabBottomRight}
-          />
         </View>
       )}
       <DeleteModal
