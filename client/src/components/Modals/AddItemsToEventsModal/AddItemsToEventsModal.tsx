@@ -69,6 +69,7 @@ const AddItemsToEventsModal: React.FC<AddItemsToEventsModalProps> = ({
           styles.card,
           {
             marginHorizontal: 16,
+            backgroundColor: theme.colors.surface,
           },
         ]}
         {...props}
@@ -128,7 +129,6 @@ export default AddItemsToEventsModal;
 // Styles
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "white",
     padding: 20,
     borderRadius: 16,
   },

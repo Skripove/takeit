@@ -45,10 +45,10 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   const addItemsHandler = useCallback(
     async (itemTitles: string[]) => {
-      await addItems(itemTitles);
-      await loadItems();
+      const result = await addItems(itemTitles);
+      setItems(result);
     },
-    [addItems, loadItems]
+    [addItems]
   );
 
   const getItemsByIds = useCallback(
@@ -63,10 +63,10 @@ export const ItemsProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   const deleteItemsHandler = useCallback(
     async (itemIds: ItemID[]) => {
-      await removeItems(itemIds);
-      await loadItems();
+      const result = await removeItems(itemIds);
+      setItems(result);
     },
-    [removeItems, loadItems]
+    [removeItems]
   );
 
   const value = React.useMemo<ItemsCtx>(

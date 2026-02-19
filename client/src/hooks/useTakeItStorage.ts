@@ -8,16 +8,15 @@ export type Storage = {
   getAllItems: () => Promise<ItemType[]>;
   getAllEvents: () => Promise<EventType[]>;
   // Items
-  addItems: (itemTitles: string[]) => Promise<void>;
-  removeItems: (itemIds: ItemID[]) => Promise<void>;
+  addItems: (itemTitles: string[]) => Promise<ItemType[]>;
+  removeItems: (itemIds: ItemID[]) => Promise<ItemType[]>;
   // Events
   addEvent: (title: string) => Promise<EventType>;
-  removeEvents: (eventIds: EventID[]) => Promise<void>;
-  checkItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
-  uncheckItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
-  // Привязка item к событию
-  attachItems: (itemIds: ItemID[], eventIds: EventID[]) => Promise<void>;
-  detachItems: (itemIds: ItemID[], eventId: EventID) => Promise<void>;
+  removeEvents: (eventIds: EventID[]) => Promise<EventType[]>;
+  checkItems: (itemIds: ItemID[], eventId: EventID) => Promise<EventType[]>;
+  uncheckItems: (itemIds: ItemID[], eventId: EventID) => Promise<EventType[]>;
+  attachItems: (itemIds: ItemID[], eventIds: EventID[]) => Promise<EventType[]>;
+  detachItems: (itemIds: ItemID[], eventId: EventID) => Promise<EventType[]>;
   // Clear
   clearItems: () => Promise<void>;
   clearEvents: () => Promise<void>;
@@ -40,25 +39,33 @@ const normalizeEventItem = (item: EventItem | ItemID): EventItem => {
 
 const normalizeEvent = (event: EventType): EventType => ({
   ...event,
-  items: Array.isArray(event.items)
-    ? event.items.map(normalizeEventItem)
-    : [],
+  items: Array.isArray(event.items) ? event.items.map(normalizeEventItem) : [],
 });
 
 export const useTakeItStorage = (): Storage => {
   // AsyncStorage.clear()
   const getAllItems = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
-    if (!raw) return [];
-    const items = JSON.parse(raw) as ItemType[];
-    return items;
+    try {
+      const raw = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
+      if (!raw) return [];
+      const items = JSON.parse(raw) as ItemType[];
+      return items;
+    } catch (e) {
+      console.error("getAllItems failed", e);
+      return [];
+    }
   }, []);
 
   const getAllEvents = useCallback(async () => {
-    const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!raw) return [];
-    const events = JSON.parse(raw) as EventType[];
-    return events.map(normalizeEvent);
+    try {
+      const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
+      if (!raw) return [];
+      const events = JSON.parse(raw) as EventType[];
+      return events.map(normalizeEvent);
+    } catch (e) {
+      console.error("getAllEvents failed", e);
+      return [];
+    }
   }, []);
 
   // Items
@@ -76,40 +83,42 @@ export const useTakeItStorage = (): Storage => {
 
       await AsyncStorage.setItem(
         ITEMS_STORAGE_KEY,
-        JSON.stringify(storageItems)
+        JSON.stringify(storageItems),
       );
+      return storageItems;
     },
-    [getAllItems]
+    [getAllItems],
   );
 
   const removeItems = useCallback(async (itemIds: ItemID[]) => {
     const rawEvents = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
     const rawItems = await AsyncStorage.getItem(ITEMS_STORAGE_KEY);
-    if (!rawEvents || !rawItems) return;
+    if (!rawEvents || !rawItems) return [];
 
     const stEvents = (JSON.parse(rawEvents) as EventType[]).map(normalizeEvent);
     const stItems = JSON.parse(rawItems) as ItemType[];
 
     const updatedStEvents = stEvents.map((stEvent) => {
       const updatedItems = stEvent.items.filter(
-        (eventItem) => !itemIds.includes(eventItem.itemId)
+        (eventItem) => !itemIds.includes(eventItem.itemId),
       );
       return { ...stEvent, items: updatedItems };
     });
 
     const filteredStItems = stItems.filter(
-      (stItem) => !itemIds.includes(stItem.id)
+      (stItem) => !itemIds.includes(stItem.id),
     );
 
     await AsyncStorage.setItem(
       EVENTS_STORAGE_KEY,
-      JSON.stringify(updatedStEvents)
+      JSON.stringify(updatedStEvents),
     );
 
     await AsyncStorage.setItem(
       ITEMS_STORAGE_KEY,
-      JSON.stringify(filteredStItems)
+      JSON.stringify(filteredStItems),
     );
+    return filteredStItems;
   }, []);
 
   // Events
@@ -128,29 +137,32 @@ export const useTakeItStorage = (): Storage => {
     storageEvents.push(newStorageEvent);
     await AsyncStorage.setItem(
       EVENTS_STORAGE_KEY,
-      JSON.stringify(storageEvents)
+      JSON.stringify(storageEvents),
     );
     return newStorageEvent;
   }, []);
 
   const removeEvents = useCallback(async (eventIds: EventID[]) => {
     const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) return [];
     const storageEvents = (JSON.parse(raw) as EventType[]).map(normalizeEvent);
     const filteredStorageEvents = storageEvents.filter(
-      (storageEvent) => !eventIds.includes(storageEvent.id)
+      (storageEvent) => !eventIds.includes(storageEvent.id),
     );
     await AsyncStorage.setItem(
       EVENTS_STORAGE_KEY,
-      JSON.stringify(filteredStorageEvents)
+      JSON.stringify(filteredStorageEvents),
     );
+    return filteredStorageEvents;
   }, []);
 
   const checkItems = useCallback(
     async (itemIds: ItemID[], eventId: EventID) => {
       const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-      if (!raw) return;
-      const storageEvents = (JSON.parse(raw) as EventType[]).map(normalizeEvent);
+      if (!raw) return [];
+      const storageEvents = (JSON.parse(raw) as EventType[]).map(
+        normalizeEvent,
+      );
 
       let foundEvent = false;
       const updatedEvents = storageEvents.map((storageEvent) => {
@@ -160,7 +172,7 @@ export const useTakeItStorage = (): Storage => {
         const items = storageEvent.items.map((eventItem) =>
           itemIds.includes(eventItem.itemId)
             ? { ...eventItem, checked: true }
-            : eventItem
+            : eventItem,
         );
 
         return { ...storageEvent, items };
@@ -170,17 +182,20 @@ export const useTakeItStorage = (): Storage => {
 
       await AsyncStorage.setItem(
         EVENTS_STORAGE_KEY,
-        JSON.stringify(updatedEvents)
+        JSON.stringify(updatedEvents),
       );
+      return updatedEvents;
     },
-    []
+    [],
   );
 
   const uncheckItems = useCallback(
     async (itemIds: ItemID[], eventId: EventID) => {
       const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-      if (!raw) return;
-      const storageEvents = (JSON.parse(raw) as EventType[]).map(normalizeEvent);
+      if (!raw) return [];
+      const storageEvents = (JSON.parse(raw) as EventType[]).map(
+        normalizeEvent,
+      );
 
       let foundEvent = false;
       const updatedEvents = storageEvents.map((storageEvent) => {
@@ -190,7 +205,7 @@ export const useTakeItStorage = (): Storage => {
         const items = storageEvent.items.map((eventItem) =>
           itemIds.includes(eventItem.itemId)
             ? { ...eventItem, checked: false }
-            : eventItem
+            : eventItem,
         );
 
         return { ...storageEvent, items };
@@ -200,24 +215,27 @@ export const useTakeItStorage = (): Storage => {
 
       await AsyncStorage.setItem(
         EVENTS_STORAGE_KEY,
-        JSON.stringify(updatedEvents)
+        JSON.stringify(updatedEvents),
       );
+      return updatedEvents;
     },
-    []
+    [],
   );
 
   // EventItems
   const attachItems = useCallback(
     async (itemIds: ItemID[], eventIds: EventID[]) => {
       const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-      if (!raw) return;
-      const storageEvents = (JSON.parse(raw) as EventType[]).map(normalizeEvent);
+      if (!raw) return [];
+      const storageEvents = (JSON.parse(raw) as EventType[]).map(
+        normalizeEvent,
+      );
 
       const updatedEvents = storageEvents.map((storageEvent) => {
         if (!eventIds.includes(storageEvent.id)) return storageEvent;
 
         const itemsMap = new Map(
-          storageEvent.items.map((eventItem) => [eventItem.itemId, eventItem])
+          storageEvent.items.map((eventItem) => [eventItem.itemId, eventItem]),
         );
 
         itemIds.forEach((itemId) => {
@@ -231,36 +249,43 @@ export const useTakeItStorage = (): Storage => {
 
       await AsyncStorage.setItem(
         EVENTS_STORAGE_KEY,
-        JSON.stringify(updatedEvents)
+        JSON.stringify(updatedEvents),
       );
+      return updatedEvents;
     },
-    []
+    [],
   );
 
   const detachItems = useCallback(
     async (itemIds: ItemID[], eventId: EventID) => {
       const raw = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
-      if (!raw) return;
-      const storageEvents = (JSON.parse(raw) as EventType[]).map(normalizeEvent);
+      if (!raw) return [];
+      const storageEvents = (JSON.parse(raw) as EventType[]).map(
+        normalizeEvent,
+      );
 
       const event = storageEvents.find(
-        (storageEvent) => storageEvent.id === eventId
+        (storageEvent) => storageEvent.id === eventId,
       );
 
       if (!event) throw new Error(`Event ${eventId} not found`);
 
       const filteredItems = event.items.filter(
-        (eventItem) => !itemIds.includes(eventItem.itemId)
+        (eventItem) => !itemIds.includes(eventItem.itemId),
       );
 
-      event.items = filteredItems; // mutate event in storageEvents
+      const updatedEvents = storageEvents.map((e) =>
+        e.id === eventId ? { ...e, items: filteredItems } : e,
+      );
 
       await AsyncStorage.setItem(
         EVENTS_STORAGE_KEY,
-        JSON.stringify(storageEvents)
+        JSON.stringify(updatedEvents),
       );
+
+      return updatedEvents;
     },
-    []
+    [],
   );
 
   const clearItems = useCallback(async () => {

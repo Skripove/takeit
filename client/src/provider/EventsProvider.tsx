@@ -98,43 +98,48 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
 
   const deleteEventsHandler = useCallback(
     async (eventIds: EventID[]) => {
-      await removeEvents(eventIds);
-      await loadEvents();
+      const result = await removeEvents(eventIds);
+      setEvents(result);
     },
-    [loadEvents, removeEvents]
+    [removeEvents]
   );
 
   const attachItemsHandler = useCallback(
     async (itemIds: ItemID[], eventIds: EventID[]) => {
-      await attachItems(itemIds, eventIds);
-      await loadEvents();
+      const result = await attachItems(itemIds, eventIds);
+      setEvents(result);
     },
-    [attachItems, loadEvents]
+    [attachItems]
   );
 
   const detachItemsHandler = useCallback(
     async (itemIds: ItemID[], eventId: EventID) => {
-      await detachItems(itemIds, eventId);
-      await loadEvents();
+      const result = await detachItems(itemIds, eventId);
+      setEvents(result);
     },
-    [detachItems, loadEvents]
+    [detachItems]
   );
 
   const checkItemsHandler = useCallback(
     async (itemIds: ItemID[], eventId: EventID) => {
-      await checkItems(itemIds, eventId);
-      await loadEvents();
+      const result = await checkItems(itemIds, eventId);
+      setEvents(result);
     },
-    [checkItems, loadEvents]
+    [checkItems]
   );
 
   const uncheckItemsHandler = useCallback(
     async (itemIds: ItemID[], eventId: EventID) => {
-      await uncheckItems(itemIds, eventId);
-      await loadEvents();
+      const result = await uncheckItems(itemIds, eventId);
+      setEvents(result);
     },
-    [loadEvents, uncheckItems]
+    [uncheckItems]
   );
+
+  const clearEventsHandler = useCallback(async () => {
+    await clearEvents();
+    await loadEvents();
+  }, [clearEvents, loadEvents]);
 
   const value = React.useMemo<EventsCtx>(
     () => ({
@@ -148,7 +153,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       detachItems: detachItemsHandler,
       checkItems: checkItemsHandler,
       uncheckItems: uncheckItemsHandler,
-      clearEvents,
+      clearEvents: clearEventsHandler,
     }),
     [
       events,
@@ -161,7 +166,7 @@ export const EventsProvider: React.FC<{ children?: React.ReactNode }> = ({
       detachItemsHandler,
       checkItemsHandler,
       uncheckItemsHandler,
-      clearEvents,
+      clearEventsHandler,
     ]
   );
 

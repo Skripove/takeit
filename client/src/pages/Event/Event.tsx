@@ -116,8 +116,6 @@ export default function EventScreen({ navigation, route }: Props) {
     new Set()
   );
   const [isPending, startTransition] = useTransition();
-  const selectedItemIdsRef = useRef(selectedItemIds);
-  selectedItemIdsRef.current = selectedItemIds;
 
   const loadEvent = useCallback(async () => {
     setLoading(true);
@@ -221,7 +219,7 @@ export default function EventScreen({ navigation, route }: Props) {
     []
   );
 
-  const deleteItemFromIvent = useCallback(
+  const deleteItemFromEvent = useCallback(
     async (itemId: ItemID) => {
       startTransition(() => {
         setItems((prev) => prev.filter((item) => item.id !== itemId));
@@ -255,25 +253,25 @@ export default function EventScreen({ navigation, route }: Props) {
       <View style={styles.rightActionContainer}>
         <IconButton
           icon="delete-outline"
-          onPress={() => deleteItemFromIvent(itemId)}
+          onPress={() => deleteItemFromEvent(itemId)}
           iconColor={theme.colors.error}
           accessibilityLabel="delete-item"
         />
       </View>
     ),
-    [deleteItemFromIvent, theme.colors.error, styles]
+    [deleteItemFromEvent, theme.colors.error, styles]
   );
 
   const renderItem = useCallback(
     ({ item }: { item: ItemType }) => (
       <EventItemRow
         item={item}
-        selected={selectedItemIdsRef.current.has(item.id)}
+        selected={selectedItemIds.has(item.id)}
         renderRightActions={renderRightActions}
         onToggle={toggleItemChecked}
       />
     ),
-    [renderRightActions, toggleItemChecked]
+    [selectedItemIds, renderRightActions, toggleItemChecked]
   );
 
   return (
