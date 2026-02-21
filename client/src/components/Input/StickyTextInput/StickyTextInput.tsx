@@ -34,7 +34,7 @@ const StickyTextInput = ({
         },
         row: {
           flexDirection: "row",
-          alignItems: "flex-end",
+          alignItems: "center",
           justifyContent: "space-between",
           gap: 6,
         },
@@ -51,7 +51,6 @@ const StickyTextInput = ({
         inputOutline: { borderRadius: 25, borderWidth: 1 },
         submitButton: {
           margin: 0,
-          marginBottom: 4,
           opacity: 0.8,
         },
       }),
@@ -86,6 +85,7 @@ const StickyTextInput = ({
               value.trim() ? theme.colors.primaryContainer : undefined
             }
             style={styles.submitButton}
+            size={30}
           />
         )}
       </View>
